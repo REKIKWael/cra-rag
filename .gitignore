@@ -11,10 +11,9 @@ build/
 # Secrets: API keys live in .env, which is never committed
 .env
 
-# Generated data: rebuilt by scripts, never committed by hand
-data/raw/
-data/processed/
-data/index/
+# Generated data (search index...): rebuilt by scripts, never committed.
+# The source texts live in corpus/ and ARE committed.
+data/
 
 # Editors and OS
 .vscode/

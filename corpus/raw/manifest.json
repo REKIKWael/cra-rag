@@ -1,0 +1,42 @@
+{
+  "cra_en.html": {
+    "title": "Regulation (EU) 2024/2847 (Cyber Resilience Act)",
+    "celex": "32024R2847",
+    "lang": "EN",
+    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847",
+    "downloaded_from": "http://publications.europa.eu/resource/cellar/21b7d4eb-a6e2-11ef-85f0-01aa75ed71a1.0006.03/DOC_1",
+    "retrieved_at": "2026-10-28T11:26:04+00:00",
+    "sha256": "fe0cca4a0caec50e7cf5a91432b94a19b211f86be8584fdba56372bdcea571ed",
+    "bytes": 710696
+  },
+  "cra_fr.html": {
+    "title": "Regulation (EU) 2024/2847 (Cyber Resilience Act)",
+    "celex": "32024R2847",
+    "lang": "FR",
+    "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32024R2847",
+    "downloaded_from": "http://publications.europa.eu/resource/cellar/21b7d4eb-a6e2-11ef-85f0-01aa75ed71a1.0009.03/DOC_1",
+    "retrieved_at": "2026-10-28T11:26:06+00:00",
+    "sha256": "77aafd619c325f18bc5d12c280bd3c293922c1a7889a889efaf5b57b414e9ae7",
+    "bytes": 776382
+  },
+  "red-da_en.html": {
+    "title": "Commission Delegated Regulation (EU) 2022/30 (RED delegated act)",
+    "celex": "32022R0030",
+    "lang": "EN",
+    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R0030",
+    "downloaded_from": "http://publications.europa.eu/resource/cellar/5f9d2be0-734b-11ec-9136-01aa75ed71a1.0006.03/DOC_1",
+    "retrieved_at": "2026-10-28T11:26:07+00:00",
+    "sha256": "f0339edc4cd73d2af79424c610e494a1a778b764524fe234bc1a7cc196bfa432",
+    "bytes": 47842
+  },
+  "red-da_fr.html": {
+    "title": "Commission Delegated Regulation (EU) 2022/30 (RED delegated act)",
+    "celex": "32022R0030",
+    "lang": "FR",
+    "url": "https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32022R0030",
+    "downloaded_from": "http://publications.europa.eu/resource/cellar/5f9d2be0-734b-11ec-9136-01aa75ed71a1.0009.03/DOC_1",
+    "retrieved_at": "2026-10-28T11:26:08+00:00",
+    "sha256": "bdd39a7cd595e67f25e39bef439ea614e621090c665a251312c80284666f4854",
+    "bytes": 54196
+  }
+}

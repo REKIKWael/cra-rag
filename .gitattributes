@@ -1,2 +1,5 @@
 # Keep LF line endings in the repo, even when files are touched from Windows
 * text=auto eol=lf
+
+# Keep the downloaded legal texts byte for byte, so their SHA-256 matches manifest.json
+corpus/raw/*.html -text
