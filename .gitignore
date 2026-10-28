@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Secrets: API keys live in .env, which is never committed
+.env
+
+# Generated data: rebuilt by scripts, never committed by hand
+data/raw/
+data/processed/
+data/index/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
