@@ -117,3 +117,125 @@ answer = """Non : le produit doit être mis sur le marché avec une configuratio
 (annexe I, partie I, point 2 b)), avec la possibilité de le réinitialiser à son état d'origine.
 Seule exception : un accord contraire avec une entreprise utilisatrice pour un produit sur mesure."""
 tags = ["exigences essentielles", "sécurité par défaut"]
+[[questions]]
+id = "q010"
+lang = "fr"
+type = "lookup"
+question = "Qu'est-ce qu'on doit obligatoirement mettre dans la notice de notre produit côté cybersécurité ?"
+expected = ["cra:anx_II"]
+answer = """Au minimum : les coordonnées du fabricant ; le point de contact unique pour signaler les
+vulnérabilités et la politique de divulgation coordonnée ; l'identification du produit ; son
+utilisation prévue et ses propriétés de sécurité ; les risques de cybersécurité prévisibles ;
+l'adresse de la déclaration UE de conformité ; le type d'assistance et la date de fin de la période
+d'assistance ; des instructions pour la mise en service sécurisée, l'installation des mises à jour,
+la mise hors service avec suppression des données et la désactivation des mises à jour automatiques."""
+tags = ["information de l'utilisateur", "notice"]
+
+[[questions]]
+id = "q011"
+lang = "en"
+type = "lookup"
+question = "A market surveillance authority thinks our product is a serious cybersecurity risk. What can it actually do to us?"
+expected = ["cra:art_54"]
+answer = """It evaluates the product against all the requirements of the Regulation. If the product
+does not comply, it requires us to take corrective action, withdraw the product or recall it, within a
+reasonable period proportionate to the risk. If we do not act in time, it adopts provisional measures
+to prohibit or restrict the product on its national market, or to withdraw or recall it, and notifies
+the Commission and the other Member States."""
+tags = ["market surveillance"]
+
+[[questions]]
+id = "q012"
+lang = "fr"
+type = "lookup"
+question = "Un laboratoire d'essais veut devenir organisme notifié pour le CRA. Quelles conditions doit-il remplir ?"
+expected = ["cra:art_39"]
+answer = """Être constitué en droit national avec la personnalité juridique ; être un tiers indépendant
+des produits qu'il évalue (ni concepteur, ni fabricant, ni distributeur, ni consultant pour ces
+produits) ; garantir son impartialité, la rémunération du personnel ne dépendant ni du nombre ni du
+résultat des évaluations ; disposer d'un personnel compétent (formation technique, connaissance de
+l'annexe I, des normes harmonisées et des spécifications communes) et de procédures documentées pour
+exécuter les tâches de l'annexe VIII ; souscrire une assurance responsabilité civile ; respecter le
+secret professionnel ; participer à la normalisation et au groupe de coordination des organismes
+notifiés."""
+tags = ["organismes notifiés"]
+
+[[questions]]
+id = "q013"
+lang = "fr"
+type = "multi"
+question = "Notre produit n'est pas dans la liste des produits importants aujourd'hui. La Commission peut-elle l'y ajouter plus tard, et jusqu'à quand ?"
+expected = ["cra:art_7", "cra:art_61"]
+answer = """Oui. La Commission peut modifier l'annexe III par actes délégués : ajouter une catégorie dans
+chaque classe, déplacer une catégorie d'une classe à l'autre ou en retirer une (article 7,
+paragraphe 3). Ce pouvoir lui est conféré pour cinq ans à compter du 10 décembre 2024, puis prorogé
+tacitement pour des périodes identiques, sauf opposition du Parlement européen ou du Conseil au plus
+tard trois mois avant la fin de chaque période (article 61, paragraphe 2)."""
+tags = ["classification", "actes délégués"]
+
+[[questions]]
+id = "q014"
+lang = "fr"
+type = "multi"
+question = "Nous fabriquons des cartes à puce sécurisées. Sont-elles des produits critiques, et qu'est-ce que ça change pour la conformité ?"
+expected = ["cra:anx_IV", "cra:art_8", "cra:art_32"]
+answer = """Oui : les cartes à puce et dispositifs similaires, y compris les éléments sécurisés, figurent à
+l'annexe IV. La Commission peut exiger par acte délégué un certificat européen de cybersécurité au
+niveau d'assurance « substantiel » au minimum (article 8, paragraphe 1). Tant qu'aucun acte délégué
+n'est adopté, ils suivent les procédures de l'article 32, paragraphe 3 : module B suivi du module C,
+module H, ou un schéma européen de certification. L'auto-évaluation (module A) n'est pas possible."""
+tags = ["classification", "produits critiques", "évaluation de la conformité"]
+
+[[questions]]
+id = "q015"
+lang = "fr"
+type = "lookup"
+question = "On doit rédiger notre déclaration UE de conformité. Quelles informations doit-elle contenir ?"
+expected = ["cra:anx_V"]
+answer = """L'identification unique du produit (nom, type) ; le nom et l'adresse du fabricant ou de son
+mandataire ; la mention qu'elle est établie sous la seule responsabilité du fabricant ; l'objet de la
+déclaration, permettant la traçabilité ; la conformité à la législation d'harmonisation de l'Union ;
+les normes harmonisées, spécifications communes ou certifications appliquées ; le cas échéant, le nom
+et le numéro de l'organisme notifié, la procédure suivie et la référence du certificat ; la date, le
+lieu, le nom, la fonction et la signature du signataire."""
+tags = ["déclaration de conformité"]
+
+[[questions]]
+id = "q016"
+lang = "fr"
+type = "multi"
+question = "Peut-on mettre une version courte de la déclaration de conformité dans le carton plutôt que le document complet ?"
+expected = ["cra:art_13", "cra:anx_VI"]
+answer = """Oui. Le fabricant fournit avec le produit soit une copie de la déclaration UE de conformité,
+soit une déclaration simplifiée (article 13, paragraphe 20). La version simplifiée suit le modèle de
+l'annexe VI : le fabricant déclare que le produit de type … est conforme au règlement (UE) 2024/2847,
+et elle doit indiquer l'adresse internet exacte où le texte complet est disponible."""
+tags = ["déclaration de conformité"]
+
+[[questions]]
+id = "q017"
+lang = "en"
+type = "lookup"
+question = "What do we need to put in our technical documentation file?"
+expected = ["cra:anx_VII"]
+answer = """At least: a general description of the product (intended purpose, software versions, photos
+of hardware, user instructions); a description of design, development, production and vulnerability
+handling, including the software bill of materials, the coordinated vulnerability disclosure policy
+and how updates are distributed securely; the cybersecurity risk assessment; the information used to
+set the support period; the harmonised standards, common specifications or certification schemes
+applied, or the solutions adopted instead; test reports; a copy of the EU declaration of conformity;
+and the software bill of materials on reasoned request of a market surveillance authority."""
+tags = ["technical documentation"]
+
+[[questions]]
+id = "q018"
+lang = "fr"
+type = "lookup"
+question = "Quelle est la différence entre le module A et le module H pour évaluer la conformité ?"
+expected = ["cra:anx_VIII"]
+answer = """Module A (contrôle interne) : le fabricant établit la documentation technique et déclare sous
+sa seule responsabilité que le produit respecte les exigences essentielles, sans organisme notifié.
+Module H (assurance complète de la qualité) : le fabricant applique un système de qualité, couvrant
+la conception, le développement, les essais et la gestion des vulnérabilités, approuvé par un
+organisme notifié de son choix, qui le surveille ensuite pendant toute la période d'assistance."""
+tags = ["évaluation de la conformité", "modules"]
