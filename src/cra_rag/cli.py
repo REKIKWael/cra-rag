@@ -2,10 +2,11 @@
 
 import argparse
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
-from cra_rag import chunks, download, evaluate, parse, questions, search
+from cra_rag import chunks, download, embed, evaluate, parse, questions, search
 
 RAW_DIR = Path("corpus/raw")
 SECTIONS_FILE = Path("data/sections.jsonl")
@@ -92,8 +93,10 @@ def _search(args: argparse.Namespace) -> int:
     sections, chunk_list, indexes = _indexes(args.raw)
     section_by_key = {(s.id, s.lang): s for s in sections}
     chunk_by_id = {c.id: c for c in chunk_list}
-    for rank, hit in enumerate(indexes[args.lang].search(args.question, args.k), start=1):
-        section = section_by_key[(hit.section_id, args.lang)]
+    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
+    print(f"Searching the {'French' if lang == 'fr' else 'English'} text (--lang to change)")
+    for rank, hit in enumerate(indexes[lang].search(args.question, args.k), start=1):
+        section = section_by_key[(hit.section_id, lang)]
         name = f"{section.label}: {section.title}" if section.title else section.label
         print(f"{rank:>2}. {hit.section_id:<14} score {hit.score:5.1f}  {name}")
         excerpt = chunk_by_id[hit.chunk_id].text.split("\n", 1)[-1].replace("\n", " ")
@@ -124,6 +127,37 @@ def _eval_search(args: argparse.Namespace) -> int:
     for r in misses:
         print(f"  {r.question.id}  expected {', '.join(r.question.expected)}")
         print(f"        got      {', '.join(r.ranking[:5])}")
+    return 0
+
+
+def _embed_speed(args: argparse.Namespace) -> int:
+    """Time the embedding model on real chunks, to estimate how long indexing takes."""
+    sections = parse.parse_corpus(args.raw)
+    searched = [c for c in chunks.chunk_sections(sections) if c.kind in search.SEARCHED_KINDS]
+    step = max(len(searched) // args.n, 1)
+    sample = [c.text for c in searched[::step][: args.n]]  # spread over the whole corpus
+    embedder = embed.OllamaEmbedder(model=args.model)
+
+    try:
+        print(f"Loading {args.model} (the first call loads the model into memory)...")
+        started = time.perf_counter()
+        [vector] = embedder.embed(["warm-up"])
+        load_time = time.perf_counter() - started
+
+        print(f"Embedding {len(sample)} chunks of the corpus...")
+        started = time.perf_counter()
+        embedder.embed(sample)
+        elapsed = time.perf_counter() - started
+    except embed.EmbeddingError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    per_chunk = elapsed / len(sample)
+    total = per_chunk * len(searched)
+    print(f"  model loaded in {load_time:.1f} s, vectors of {len(vector)} dimensions")
+    print(f"  {per_chunk:.2f} s per chunk ({len(sample)} chunks in {elapsed:.1f} s)")
+    duration = f"{total:.0f} s" if total < 120 else f"{total / 60:.0f} min"
+    print(f"  indexing all {len(searched)} chunks (fr + en) would take about {duration}")
     return 0
 
 
@@ -158,7 +192,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd = commands.add_parser("search", help='find the sections answering a question: search "..."')
     cmd.add_argument("question")
-    cmd.add_argument("--lang", choices=list(questions.LANGS), default="fr")
+    cmd.add_argument("--lang", choices=["auto", *questions.LANGS], default="auto")
     cmd.add_argument("-k", type=int, default=5, help="number of sections to show")
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_search)
@@ -167,6 +201,12 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_search)
+
+    cmd = commands.add_parser("embed-speed", help="time the embedding model on this computer")
+    cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)
+    cmd.add_argument("-n", type=int, default=16, help="number of chunks to embed")
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_embed_speed)
 
     args = parser.parse_args(argv)
     return args.handler(args)

@@ -25,8 +25,14 @@ def section(text, sid="cra:art_14", title="Reporting", kind="article", lang="en"
 
 def test_a_short_section_is_one_chunk_with_its_header():
     [chunk] = chunks.chunk_section(section("1. A manufacturer shall notify."))
-    assert chunk.id == "cra:art_14#1"
+    assert chunk.id == "cra:art_14/en#1"
     assert chunk.text == "Article 14: Reporting\n1. A manufacturer shall notify."
+
+
+def test_chunk_ids_are_unique_across_languages():
+    english = chunks.chunk_section(section("Text.", lang="en"))
+    french = chunks.chunk_section(section("Texte.", lang="fr"))
+    assert english[0].id != french[0].id
 
 
 def test_a_long_section_is_cut_into_chunks_that_respect_the_size():

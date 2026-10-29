@@ -22,7 +22,7 @@ SENTENCE_END = re.compile(r"(?<=[.;])\s+")
 
 @dataclass(frozen=True)
 class Chunk:
-    id: str  # "cra:art_14#2"
+    id: str  # "cra:art_14/fr#2": second chunk of Article 14 in French, unique
     section_id: str  # "cra:art_14"
     lang: str
     kind: str  # kind of the section: "article", "annex" or "recital"
@@ -74,7 +74,7 @@ def chunk_section(section: Section, max_chars: int = MAX_CHARS) -> list[Chunk]:
 
     return [
         Chunk(
-            id=f"{section.id}#{n}",
+            id=f"{section.id}/{section.lang}#{n}",
             section_id=section.id,
             lang=section.lang,
             kind=section.kind,

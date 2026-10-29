@@ -28,6 +28,24 @@ STEMMERS = {"en": snowballstemmer.stemmer("english"), "fr": snowballstemmer.stem
 SEARCHED_KINDS = ("article", "annex")
 
 
+FRENCH_WORDS = set(
+    "le la les des du un une est sont et que qui quoi quel quelle quels quelles pour dans "
+    "sur nous notre nos doit doivent peut peuvent ce cette avec pas faut-il".split()
+)
+ENGLISH_WORDS = set(
+    "the a an is are and what who which for in we our us must can do does to of with not "
+    "how when should".split()
+)
+
+
+def guess_lang(text: str) -> str:
+    """Guess "fr" or "en" from the most common small words of each language."""
+    words = text.lower().replace("’", "'").replace("'", " ").split()
+    french = sum(w in FRENCH_WORDS for w in words)
+    english = sum(w in ENGLISH_WORDS for w in words)
+    return "en" if english > french else "fr"
+
+
 def _strip_accents(word: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", word) if not unicodedata.combining(c))
 

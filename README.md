@@ -68,6 +68,7 @@ uv run cra-rag show cra:art_14          # print one section (add --lang fr for F
 uv run cra-rag questions                # check the reference questions in eval/questions.toml
 uv run cra-rag search "Qui doit-on prévenir quand une faille est exploitée ?"
 uv run cra-rag eval-search              # score the search on the reference questions
+uv run cra-rag embed-speed              # time the embedding model (needs Ollama and bge-m3)
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 
