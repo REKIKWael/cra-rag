@@ -107,3 +107,13 @@ expected = []
 answer = """Les textes du corpus ne contiennent pas la norme EN 18031-1. L'assistant doit le dire et
 ne pas inventer le contenu de la norme."""
 tags = ["RED", "normes"]
+[[questions]]
+id = "q009"
+lang = "fr"
+type = "lookup"
+question = "Peut-on livrer notre produit avec les protections désactivées, et laisser le client les activer s'il le souhaite ?"
+expected = ["cra:anx_I"]
+answer = """Non : le produit doit être mis sur le marché avec une configuration de sécurité par défaut
+(annexe I, partie I, point 2 b)), avec la possibilité de le réinitialiser à son état d'origine.
+Seule exception : un accord contraire avec une entreprise utilisatrice pour un produit sur mesure."""
+tags = ["exigences essentielles", "sécurité par défaut"]
