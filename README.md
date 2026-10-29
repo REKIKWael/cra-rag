@@ -69,6 +69,8 @@ uv run cra-rag questions                # check the reference questions in eval/
 uv run cra-rag search "Qui doit-on prévenir quand une faille est exploitée ?"
 uv run cra-rag eval-search              # score the search on the reference questions
 uv run cra-rag embed-speed              # time the embedding model (needs Ollama and bge-m3)
+uv run cra-rag index                    # build the vector index (Ollama + bge-m3, once)
+uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid search
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 

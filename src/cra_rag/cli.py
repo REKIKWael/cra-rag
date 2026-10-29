@@ -6,7 +6,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from cra_rag import chunks, download, embed, evaluate, parse, questions, search
+from cra_rag import chunks, dense, download, embed, evaluate, parse, questions, retriever, search
 
 RAW_DIR = Path("corpus/raw")
 SECTIONS_FILE = Path("data/sections.jsonl")
@@ -82,47 +82,100 @@ def _questions(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
-def _indexes(raw: Path) -> tuple[list[parse.Section], list[chunks.Chunk], dict]:
-    sections = parse.parse_corpus(raw)
-    chunk_list = chunks.chunk_sections(sections)
-    indexes = {lang: search.BM25Index(chunk_list, lang) for lang in questions.LANGS}
-    return sections, chunk_list, indexes
+def _open_retriever(raw: Path, methods: list[str]) -> retriever.Retriever | None:
+    """A retriever able to run `methods`; None (after a message) if the index is missing."""
+    try:
+        return retriever.Retriever(raw, use_dense=any(m != "bm25" for m in methods))
+    except dense.IndexMissingError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return None
+
+
+def _index(args: argparse.Namespace) -> int:
+    sections = parse.parse_corpus(args.raw)
+    embedder = embed.OllamaEmbedder(model=args.model)
+    print(f"Building the vector index with {args.model} (interrupt any time: it resumes)")
+    try:
+        count = dense.build_index(chunks.chunk_sections(sections), embedder, log=print)
+    except embed.EmbeddingError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    print(f"Index ready: {count} chunks in {dense.INDEX_DIR}")
+    return 0
 
 
 def _search(args: argparse.Namespace) -> int:
-    sections, chunk_list, indexes = _indexes(args.raw)
-    section_by_key = {(s.id, s.lang): s for s in sections}
-    chunk_by_id = {c.id: c for c in chunk_list}
+    method = args.method
+    if method == "auto":
+        method = "hybrid" if (dense.INDEX_DIR / "qdrant").exists() else "bm25"
+    searcher = _open_retriever(args.raw, [method])
+    if searcher is None:
+        return 1
     lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
-    print(f"Searching the {'French' if lang == 'fr' else 'English'} text (--lang to change)")
-    for rank, hit in enumerate(indexes[lang].search(args.question, args.k), start=1):
+    language = "French" if lang == "fr" else "English"
+    print(f"Searching the {language} text with {method} (--lang and --method to change)")
+    section_by_key = {(s.id, s.lang): s for s in searcher.sections}
+    chunk_by_id = {c.id: c for c in searcher.chunks}
+    try:
+        hits = searcher.search(method, args.question, lang, args.k)
+    except embed.EmbeddingError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        searcher.close()
+    for rank, hit in enumerate(hits, start=1):
         section = section_by_key[(hit.section_id, lang)]
         name = f"{section.label}: {section.title}" if section.title else section.label
-        print(f"{rank:>2}. {hit.section_id:<14} score {hit.score:5.1f}  {name}")
+        print(f"{rank:>2}. {hit.section_id:<14} score {hit.score:6.3f}  {name}")
         excerpt = chunk_by_id[hit.chunk_id].text.split("\n", 1)[-1].replace("\n", " ")
         print(f"    {excerpt[:150]}...")
     return 0
 
 
-def _eval_search(args: argparse.Namespace) -> int:
-    _, _, indexes = _indexes(args.raw)
-    question_set = questions.load(args.file)
-    results = evaluate.run(question_set, lambda q: indexes[q.lang].search(q.question, 10))
+COLUMNS = [f"recall@{k}" for k in evaluate.KS] + ["mrr"]
 
-    columns = [f"recall@{k}" for k in evaluate.KS] + ["mrr"]
-    groups = {"all": results}
-    for lang in questions.LANGS:
-        groups[lang] = [r for r in results if r.question.lang == lang]
-    for kind in ("lookup", "multi", "trap"):
-        groups[kind] = [r for r in results if r.question.type == kind]
 
-    print(f"BM25 on {len(results)} questions (out_of_scope questions have nothing to find)")
-    print(f"{'':<8}{'n':>4}" + "".join(f"{c:>11}" for c in columns))
+def _score_table(groups: dict[str, list[evaluate.Result]]) -> None:
+    print(f"{'':<8}{'n':>4}" + "".join(f"{c:>11}" for c in COLUMNS))
     for name, group in groups.items():
         scores = evaluate.summary(group)
-        print(f"{name:<8}{len(group):>4}" + "".join(f"{scores[c]:>11.2f}" for c in columns))
+        print(f"{name:<8}{len(group):>4}" + "".join(f"{scores[c]:>11.2f}" for c in COLUMNS))
 
-    misses = [r for r in results if r.recall(5) < 1]
+
+def _eval_search(args: argparse.Namespace) -> int:
+    methods = list(retriever.METHODS) if args.method == "all" else [args.method]
+    searcher = _open_retriever(args.raw, methods)
+    if searcher is None:
+        return 1
+    question_set = questions.load(args.file)
+    try:
+        results = {
+            m: evaluate.run(question_set, lambda q, m=m: searcher.search(m, q.question, q.lang))
+            for m in methods
+        }
+    except embed.EmbeddingError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        searcher.close()
+
+    count = len(next(iter(results.values())))
+    print(f"{count} questions (out_of_scope questions have nothing to find)")
+    if len(methods) > 1:
+        _score_table(results)
+        print("\nFor the details of one method: uv run cra-rag eval-search --method dense")
+        return 0
+
+    [method_results] = results.values()
+    groups = {"all": method_results}
+    for lang in questions.LANGS:
+        groups[lang] = [r for r in method_results if r.question.lang == lang]
+    for kind in ("lookup", "multi", "trap"):
+        groups[kind] = [r for r in method_results if r.question.type == kind]
+    print(f"Method: {methods[0]}")
+    _score_table(groups)
+
+    misses = [r for r in method_results if r.recall(5) < 1]
     print(f"\nNot fully found in the top 5 ({len(misses)} questions):")
     for r in misses:
         print(f"  {r.question.id}  expected {', '.join(r.question.expected)}")
@@ -193,14 +246,21 @@ def main(argv: list[str] | None = None) -> int:
     cmd = commands.add_parser("search", help='find the sections answering a question: search "..."')
     cmd.add_argument("question")
     cmd.add_argument("--lang", choices=["auto", *questions.LANGS], default="auto")
+    cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
     cmd.add_argument("-k", type=int, default=5, help="number of sections to show")
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_search)
 
     cmd = commands.add_parser("eval-search", help="score the search on the reference questions")
+    cmd.add_argument("--method", choices=["all", *retriever.METHODS], default="bm25")
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_search)
+
+    cmd = commands.add_parser("index", help="build the vector index (needs Ollama, ~12 min)")
+    cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_index)
 
     cmd = commands.add_parser("embed-speed", help="time the embedding model on this computer")
     cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)
