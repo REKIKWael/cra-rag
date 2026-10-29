@@ -239,3 +239,280 @@ Module H (assurance complète de la qualité) : le fabricant applique un systèm
 la conception, le développement, les essais et la gestion des vulnérabilités, approuvé par un
 organisme notifié de son choix, qui le surveille ensuite pendant toute la période d'assistance."""
 tags = ["évaluation de la conformité", "modules"]
+
+[[questions]]
+id = "q019"
+lang = "fr"
+type = "lookup"
+question = "Nous fabriquons un dispositif médical connecté. Est-ce qu'il est concerné par le CRA ?"
+expected = ["cra:art_2"]
+answer = """Non : le CRA ne s'applique pas aux produits relevant du règlement (UE) 2017/745 (dispositifs
+médicaux) ni du règlement (UE) 2017/746 (dispositifs médicaux de diagnostic in vitro), comme le prévoit
+l'article 2, paragraphe 2. Ces produits restent soumis à leur propre réglementation."""
+tags = ["champ d'application"]
+
+[[questions]]
+id = "q020"
+lang = "en"
+type = "lookup"
+question = "We import connected cameras made outside the EU. What do we have to check before we start selling them?"
+expected = ["cra:art_19"]
+answer = """Importers may only place on the market products that meet the essential requirements of
+Annex I. Before placing a product on the market they must ensure that the manufacturer carried out the
+appropriate conformity assessment (Article 32), that the technical documentation has been drawn up,
+that the product bears the CE marking and comes with the EU declaration of conformity and the user
+information of Annex II in an easily understood language, and that the manufacturer complied with
+Article 13(15), (16) and (19)."""
+tags = ["importers", "economic operators"]
+
+[[questions]]
+id = "q021"
+lang = "fr"
+type = "lookup"
+question = "On achète des routeurs à un fabricant asiatique et on les vend sous notre propre marque. Quelles obligations avons-nous ?"
+expected = ["cra:art_21"]
+answer = """Vous êtes considérés comme fabricant. Un importateur ou un distributeur qui met un produit sur
+le marché sous son propre nom ou sa propre marque est soumis aux articles 13 (obligations des
+fabricants) et 14 (signalement). Il en va de même s'il apporte une modification substantielle à un
+produit déjà mis sur le marché (article 21)."""
+tags = ["opérateurs économiques", "fabricant"]
+
+[[questions]]
+id = "q022"
+lang = "fr"
+type = "lookup"
+question = "Notre objet connecté dépend d'un serveur cloud que nous développons nous-mêmes. Ce backend est-il couvert par le CRA ?"
+expected = ["cra:art_3"]
+answer = """Oui, en tant que solution de traitement de données à distance : le « produit comportant des
+éléments numériques » inclut ses solutions de traitement de données à distance (article 3, point 1).
+Il s'agit de tout traitement à distance conçu et développé par le fabricant ou sous sa responsabilité,
+et dont l'absence empêcherait le produit d'exécuter une de ses fonctions (article 3, point 2)."""
+tags = ["champ d'application", "définitions", "cloud"]
+
+[[questions]]
+id = "q023"
+lang = "fr"
+type = "lookup"
+question = "Peut-on faire payer les mises à jour de sécurité à nos clients, par exemple dans un contrat de maintenance ?"
+expected = ["cra:anx_I"]
+answer = """Non : les correctifs et mises à jour de sécurité doivent être diffusés sans retard et
+gratuitement, accompagnés de messages consultatifs qui indiquent aux utilisateurs les mesures à
+prendre (annexe I, partie II, point 8). Seule exception : un accord contraire avec un utilisateur
+professionnel pour un produit sur mesure."""
+tags = ["mises à jour", "gestion des vulnérabilités"]
+
+[[questions]]
+id = "q024"
+lang = "en"
+type = "lookup"
+question = "Can we wait and ship our security fixes together with the next feature release?"
+expected = ["cra:anx_I"]
+answer = """Not as a rule. Vulnerabilities must be addressed and remediated without delay, including by
+providing security updates, and where technically feasible new security updates must be provided
+separately from functionality updates (Annex I, Part II, point 2)."""
+tags = ["security updates", "vulnerability handling"]
+
+[[questions]]
+id = "q025"
+lang = "fr"
+type = "lookup"
+question = "On a trouvé une faille dans une bibliothèque open source que notre produit intègre. Qu'est-ce qu'on doit faire ?"
+expected = ["cra:art_13"]
+answer = """Signaler la vulnérabilité à la personne ou à l'entité qui maintient le composant, la traiter
+et y remédier selon les exigences de l'annexe I, partie II, et, si vous avez développé un correctif,
+partager le code ou la documentation correspondants avec le mainteneur, dans un format lisible par
+machine s'il y a lieu (article 13, paragraphe 6)."""
+tags = ["composants tiers", "open source", "gestion des vulnérabilités"]
+
+[[questions]]
+id = "q026"
+lang = "fr"
+type = "lookup"
+question = "Est-ce qu'on doit dire à l'acheteur jusqu'à quand le produit recevra des mises à jour de sécurité ?"
+expected = ["cra:art_13"]
+answer = """Oui : la date de fin de la période d'assistance, avec au moins le mois et l'année, doit être
+précisée au moment de l'achat, de manière claire, compréhensible et facilement accessible, et le cas
+échéant sur le produit, son emballage ou par des moyens numériques (article 13, paragraphe 19)."""
+tags = ["période d'assistance", "information de l'utilisateur"]
+
+[[questions]]
+id = "q027"
+lang = "en"
+type = "lookup"
+question = "What fine do we risk if we give incomplete or misleading information to a market surveillance authority?"
+expected = ["cra:art_64"]
+answer = """Up to EUR 5 000 000 or, for an undertaking, up to 1 % of its total worldwide annual turnover
+for the preceding financial year, whichever is higher (Article 64(4)). It covers incorrect, incomplete
+or misleading information supplied to notified bodies and market surveillance authorities in reply to
+a request."""
+tags = ["penalties"]
+
+[[questions]]
+id = "q028"
+lang = "fr"
+type = "lookup"
+question = "Peut-on montrer un prototype pas encore conforme sur un salon, ou diffuser une version bêta de notre logiciel ?"
+expected = ["cra:art_4"]
+answer = """Oui, sous conditions. Lors d'un salon, d'une exposition ou d'une démonstration, un produit non
+conforme, y compris un prototype, peut être présenté s'il porte une marque visible indiquant qu'il
+n'est pas conforme et ne sera pas mis à disposition tant qu'il ne l'est pas. Un logiciel inachevé non
+conforme peut être mis à disposition pour une durée limitée nécessaire aux essais, avec une marque
+visible indiquant qu'il n'est pas conforme et ne sert qu'aux essais (article 4, paragraphes 2 et 3)."""
+tags = ["champ d'application", "prototypes"]
+
+[[questions]]
+id = "q029"
+lang = "fr"
+type = "lookup"
+question = "Nos équipements sont développés uniquement pour les forces armées. Le CRA s'applique-t-il ?"
+expected = ["cra:art_2"]
+answer = """Non : le règlement ne s'applique pas aux produits développés ou modifiés exclusivement à des
+fins de sécurité nationale ou de défense, ni aux produits spécifiquement conçus pour traiter des
+informations classifiées (article 2, paragraphe 7)."""
+tags = ["champ d'application", "défense"]
+
+[[questions]]
+id = "q030"
+lang = "en"
+type = "lookup"
+question = "Our product is pure software, there is nothing physical to stick a label on. Where does the CE marking go?"
+expected = ["cra:art_30"]
+answer = """For software, the CE marking is affixed either to the EU declaration of conformity or on the
+website accompanying the software; in the latter case the relevant section of the website must be
+easily and directly accessible to consumers (Article 30(1)). It must be affixed before the product is
+placed on the market (Article 30(3)), followed by the notified body's identification number when
+module H is used (Article 30(4))."""
+tags = ["CE marking", "software"]
+
+[[questions]]
+id = "q031"
+lang = "fr"
+type = "lookup"
+question = "Une faille qui n'est pas exploitée, ou un incident évité de justesse : peut-on quand même les signaler ?"
+expected = ["cra:art_15"]
+answer = """Oui, de manière volontaire. Les fabricants, comme toute autre personne physique ou morale,
+peuvent notifier à un CSIRT désigné comme coordinateur ou à l'ENISA toute vulnérabilité, les
+cybermenaces susceptibles d'affecter le profil de risque d'un produit, tout incident ayant des
+répercussions sur sa sécurité, ainsi que les incidents évités qui auraient pu en provoquer un
+(article 15, paragraphes 1 et 2)."""
+tags = ["signalement", "signalement volontaire"]
+
+[[questions]]
+id = "q032"
+lang = "fr"
+type = "multi"
+question = "Un intégrateur modifie le firmware d'une caméra déjà vendue pour l'utiliser autrement, puis la revend. Devient-il fabricant ?"
+expected = ["cra:art_3", "cra:art_22"]
+answer = """Oui, si c'est une modification substantielle : une modification apportée après la mise sur le
+marché qui a une incidence sur la conformité aux exigences essentielles de l'annexe I, partie I, ou
+qui modifie l'utilisation prévue pour laquelle le produit a été évalué (article 3, point 30). La
+personne qui apporte une telle modification et met le produit à disposition est considérée comme
+fabricant (article 22) : elle est soumise aux articles 13 et 14 pour la partie modifiée, ou pour tout
+le produit si la modification affecte sa cybersécurité dans son ensemble."""
+tags = ["modification substantielle", "opérateurs économiques"]
+
+[[questions]]
+id = "q033"
+lang = "en"
+type = "multi"
+question = "A non-profit foundation maintains an open-source library that companies use in their products. Does the CRA put obligations on the foundation?"
+expected = ["cra:art_3", "cra:art_24", "cra:art_64"]
+answer = """If it qualifies as an open-source software steward, that is a legal person other than a
+manufacturer that systematically supports on a sustained basis the development of specific free and
+open-source products intended for commercial activities (Article 3(14)), it must put in place and
+document a cybersecurity policy, cooperate with market surveillance authorities and give them its
+documentation on reasoned request, and report actively exploited vulnerabilities under Article 14(1)
+to the extent it is involved in development (Article 24). Administrative fines do not apply to
+open-source software stewards (Article 64(10))."""
+tags = ["open source", "stewards"]
+
+[[questions]]
+id = "q034"
+lang = "fr"
+type = "multi"
+question = "Nous sommes une petite entreprise de 20 personnes. Le CRA prévoit-il des allègements pour nous ?"
+expected = ["cra:art_33", "cra:art_32", "cra:art_64"]
+answer = """Oui. Les États membres mènent des actions de sensibilisation et de formation, ouvrent un canal
+de communication dédié, soutiennent les essais et l'évaluation de la conformité, et peuvent créer des
+sas réglementaires ; les micro et petites entreprises peuvent fournir la documentation technique dans
+un format simplifié (article 33). Les redevances d'évaluation de la conformité tiennent compte des
+besoins des PME et sont réduites en proportion (article 32, paragraphe 6). Les micro et petites
+entreprises ne reçoivent pas d'amende pour un dépassement du délai de 24 heures de l'alerte précoce
+(article 64, paragraphe 10)."""
+tags = ["PME", "sanctions"]
+
+[[questions]]
+id = "q035"
+lang = "en"
+type = "multi"
+question = "We make firewalls. How are they classified, and can we assess conformity ourselves?"
+expected = ["cra:anx_III", "cra:art_32"]
+answer = """Firewalls and intrusion detection and prevention systems are important products of class II
+(Annex III). Class II products cannot use internal control (module A): they need EU-type examination
+(module B) followed by module C, full quality assurance (module H), or, where available and
+applicable, a European cybersecurity certification scheme at assurance level at least 'substantial'
+(Article 32(3))."""
+tags = ["classification", "conformity assessment"]
+
+[[questions]]
+id = "q036"
+lang = "fr"
+type = "trap"
+question = "Les produits qu'on a vendus avant décembre 2027 échappent complètement au CRA, non ?"
+expected = ["cra:art_69", "cra:art_71"]
+answer = """Non. Les produits mis sur le marché avant le 11 décembre 2027 ne sont soumis aux exigences du
+règlement que s'ils font l'objet d'une modification substantielle à partir de cette date (article 69,
+paragraphe 2). Mais les obligations de signalement de l'article 14 s'appliquent aussi à ces produits
+(article 69, paragraphe 3), et ce dès le 11 septembre 2026 (article 71)."""
+tags = ["dates d'application", "signalement", "produits existants"]
+notes = """Idée reçue fréquente. Attention aussi : dans le texte publié, la version française de
+l'article 69, paragraphe 3, dit « mis sur le marché le 11 décembre 2027 », alors que la version
+anglaise dit « before 11 December 2027 ». Divergence à signaler."""
+
+[[questions]]
+id = "q037"
+lang = "fr"
+type = "trap"
+question = "Le CRA nous oblige-t-il à publier la SBOM de nos produits ?"
+expected = ["cra:anx_I", "cra:anx_VII", "cra:anx_II"]
+answer = """Non, pas à la publier. Le fabricant doit établir une nomenclature des logiciels (SBOM) dans un
+format couramment utilisé et lisible par machine, couvrant au moins les dépendances de niveau
+supérieur (annexe I, partie II, point 1). Elle fait partie de la documentation technique et doit être
+fournie à une autorité de surveillance du marché sur demande motivée (annexe VII). La rendre
+accessible aux utilisateurs est un choix du fabricant ; s'il le fait, la notice indique où la
+consulter (annexe II, point 9)."""
+tags = ["SBOM", "gestion des vulnérabilités"]
+notes = "Idée reçue fréquente : la SBOM devrait être publique."
+
+[[questions]]
+id = "q038"
+lang = "en"
+type = "out_of_scope"
+question = "Under NIS2, how quickly must an essential entity notify a significant incident to its CSIRT?"
+expected = []
+answer = """The corpus holds the CRA and the RED delegated act, not Directive (EU) 2022/2555 (NIS2),
+which the CRA only refers to. The assistant must say the texts do not answer this, and must not
+present the CRA's own reporting deadlines for manufacturers as the NIS2 rules."""
+tags = ["NIS2"]
+
+[[questions]]
+id = "q039"
+lang = "fr"
+type = "out_of_scope"
+question = "Au Royaume-Uni, quelles règles de cybersécurité s'appliquent à nos objets connectés grand public ?"
+expected = []
+answer = """Le corpus ne contient que des textes de l'Union européenne (CRA et règlement délégué RED) et
+ne traite pas du droit britannique. L'assistant doit le dire et ne pas inventer de règles."""
+tags = ["hors UE"]
+
+[[questions]]
+id = "q040"
+lang = "fr"
+type = "out_of_scope"
+question = "Concrètement, à quel organisme français doit-on envoyer nos notifications de vulnérabilités ?"
+expected = []
+answer = """Les textes ne nomment pas les CSIRT nationaux : le règlement renvoie au CSIRT désigné comme
+coordinateur par chaque État membre, et les notifications passent par la plateforme unique de
+signalement. Le corpus ne permet pas de dire quel organisme est désigné en France : l'assistant doit
+le dire et ne pas l'inventer."""
+tags = ["signalement", "autorités nationales"]

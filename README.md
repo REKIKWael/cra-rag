@@ -14,14 +14,15 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 2 of 7 done (corpus ingestion).
+> **Status:** work in progress, step 3 of 7 done (reference question set).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
 
 - **Every answer cites its sources** (article, annex). No source, no answer.
-- **Quality is measured, not assumed.** A reference question set, written by a
-  domain practitioner, is run automatically in CI.
+- **Quality is measured, not assumed.** A set of 40 reference questions, reviewed
+  by a practitioner of product cybersecurity regulation, is checked in CI and will
+  score retrieval and answers. See [`eval/questions.toml`](eval/questions.toml).
 - **Reproducible.** The texts are downloaded by script and committed with their
   SHA-256 checksums, so every result can be traced to an exact version.
 - **Provider-agnostic.** The language model sits behind an interface and can be
@@ -43,11 +44,15 @@ RED delegated act.
 of application was postponed to 1 August 2025 by Delegated Regulation (EU)
 2023/2444, which is not in the corpus yet.
 
+**Language versions differ in places.** For example, Article 69(3) of the CRA
+covers products placed on the market "before 11 December 2027" in English, but
+"le 11 décembre 2027" (on that date) in the published French text.
+
 ## Roadmap
 
 - [x] 1. Project skeleton: packaging (uv), lint (ruff), tests (pytest), CI
 - [x] 2. Corpus ingestion: download the texts, split them into articles, annexes and recitals
-- [ ] 3. Reference question set: questions with the articles that answer them
+- [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
 - [ ] 4. Retrieval: embeddings and a vector store, measured with recall@k
 - [ ] 5. Generation: cited answers from a language model behind a provider interface
 - [ ] 6. FastAPI service and Docker image
