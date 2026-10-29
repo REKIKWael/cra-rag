@@ -14,7 +14,7 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 3 of 7 done (reference question set).
+> **Status:** work in progress, step 4 of 7 done (retrieval).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -25,6 +25,8 @@ API and evaluation running in CI.
   score retrieval and answers. See [`eval/questions.toml`](eval/questions.toml).
 - **Reproducible.** The texts are downloaded by script and committed with their
   SHA-256 checksums, so every result can be traced to an exact version.
+- **Local and free.** The models run on the machine with [Ollama](https://ollama.com):
+  no API key, no cost, and no document leaves the computer.
 - **Provider-agnostic.** The language model sits behind an interface and can be
   swapped (hosted API or local model).
 
@@ -53,7 +55,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 1. Project skeleton: packaging (uv), lint (ruff), tests (pytest), CI
 - [x] 2. Corpus ingestion: download the texts, split them into articles, annexes and recitals
 - [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
-- [ ] 4. Retrieval, measured with recall@k: BM25 baseline (done), then embeddings and a vector store
+- [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
 - [ ] 5. Generation: cited answers from a language model behind a provider interface
 - [ ] 6. FastAPI service and Docker image
 - [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
@@ -87,10 +89,36 @@ one early (1 if it is ranked first, 1/2 if second...).
 | Method | recall@1 | recall@3 | recall@5 | recall@10 | MRR |
 |---|---|---|---|---|---|
 | BM25 (keywords, stemmed) | 0.25 | 0.44 | 0.57 | 0.86 | 0.50 |
+| Semantic (bge-m3 + Qdrant) | 0.37 | **0.75** | 0.81 | 0.87 | **0.65** |
+| Hybrid (reciprocal rank fusion) | 0.34 | 0.66 | **0.82** | **0.91** | 0.59 |
 
-The questions are worded the way manufacturers ask them, not with the words of
-the regulation. Keyword search often misses them: that gap is what semantic
-search has to close. A test in CI fails if BM25 falls below recall@10 = 0.80.
+Recall@5 by question type:
+
+| Type | BM25 | Semantic | Hybrid |
+|---|---|---|---|
+| lookup (24) | 0.62 | 0.96 | 0.96 |
+| multi (8) | 0.60 | 0.67 | 0.71 |
+| trap (4) | 0.21 | 0.25 | 0.25 |
+
+What this shows:
+
+- **Semantic search closes the vocabulary gap.** The questions are worded the way
+  manufacturers ask them ("protections désactivées"), not with the words of the
+  regulation ("configuration de sécurité par défaut"). Recall@5 on single-section
+  questions goes from 0.62 to 0.96.
+- **Hybrid is the default.** The answer step will read the first 5 sections, and
+  at 5 the semantic and hybrid methods are level; hybrid keeps the exact-term
+  matches of BM25 (product names, "module H") and finds more at 10. The
+  differences between the two are one or two questions out of 36: not enough to
+  justify tuning fusion weights, which would only fit these 36 questions.
+- **Weak spots:** questions whose answer spans several sections, and traps, where
+  the decisive provision (a date in Article 71, a definition in Article 3) sits in
+  a long article about something else.
+
+Searching both languages at once (cross-lingual) changed nothing, so each
+question is searched in its own language. A test in CI fails if BM25 falls
+below recall@10 = 0.80; the semantic and hybrid scores need Ollama and will be
+checked in CI with the end-to-end evaluation (step 7).
 
 ## Development
 
