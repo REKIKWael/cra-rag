@@ -60,6 +60,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 ```bash
 uv run cra-rag parse                    # split the texts into sections -> data/sections.jsonl
 uv run cra-rag show cra:art_14          # print one section (add --lang fr for French)
+uv run cra-rag questions                # check the reference questions in eval/questions.toml
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 

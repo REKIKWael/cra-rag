@@ -1,0 +1,109 @@
+# Reference questions used to measure cra-rag.
+# Written by a practitioner of product cybersecurity regulation. Each question
+# names the sections that answer it, so retrieval and answers can be scored.
+#
+# Fields
+#   id        unique: "q001", "q002"...
+#   lang      "fr" or "en", the language of the question
+#   type      "lookup"        answered by one section
+#             "multi"         needs several sections together
+#             "trap"          a common misconception, or a point the corpus gets wrong
+#             "out_of_scope"  the texts do not answer it: the assistant must say so
+#   question  asked the way a manufacturer would ask it, not copied from the text
+#   expected  ids of the sections holding the answer (find them with `uv run cra-rag show`);
+#             empty for "out_of_scope"
+#   answer    the key facts a correct answer must contain
+#   tags      free labels used to break the scores down (optional)
+#   notes     anything useful for a reviewer (optional)
+#
+# Check the file with: uv run cra-rag questions
+
+[[questions]]
+id = "q001"
+lang = "fr"
+type = "lookup"
+question = "On vient de découvrir qu'une faille de notre produit est exploitée par des attaquants. Qui doit-on prévenir, et dans quels délais ?"
+expected = ["cra:art_14"]
+answer = """Notifier simultanément le CSIRT désigné comme coordinateur et l'ENISA, via la plateforme
+unique de signalement : alerte précoce au plus tard 24 heures après en avoir eu connaissance,
+notification de la vulnérabilité au plus tard 72 heures après, rapport final au plus tard 14 jours
+après la mise à disposition d'une mesure de correction ou d'atténuation."""
+tags = ["signalement", "délais"]
+
+[[questions]]
+id = "q002"
+lang = "fr"
+type = "trap"
+question = "Le CRA ne s'applique qu'en décembre 2027 : est-ce qu'on a vraiment besoin d'organiser le signalement des vulnérabilités dès maintenant ?"
+expected = ["cra:art_71"]
+answer = """Oui. Le règlement s'applique à partir du 11 décembre 2027, mais l'article 14
+(obligations de signalement) s'applique dès le 11 septembre 2026."""
+tags = ["dates d'application", "signalement"]
+notes = "Idée reçue fréquente : tout s'appliquerait en 2027."
+
+[[questions]]
+id = "q003"
+lang = "fr"
+type = "multi"
+question = "Nous éditons un gestionnaire de mots de passe. Peut-on se contenter d'une auto-évaluation pour la conformité ?"
+expected = ["cra:anx_III", "cra:art_7", "cra:art_32"]
+answer = """Les gestionnaires de mots de passe sont des produits importants de classe I (annexe III,
+article 7). Le contrôle interne (module A) n'est possible que si le fabricant applique entièrement des
+normes harmonisées, des spécifications communes ou un schéma européen de certification (niveau
+« substantiel » au minimum) ; sinon il faut passer par le module B suivi du module C, ou par le
+module H (article 32, paragraphe 2)."""
+tags = ["classification", "évaluation de la conformité"]
+
+[[questions]]
+id = "q004"
+lang = "fr"
+type = "lookup"
+question = "Pendant combien de temps doit-on fournir des correctifs de sécurité pour un produit ?"
+expected = ["cra:art_13"]
+answer = """La période d'assistance est d'au moins cinq ans, sauf si le produit est censé être utilisé
+moins longtemps : elle correspond alors à sa durée d'utilisation prévue. Chaque mise à jour de
+sécurité publiée reste disponible au moins dix ans, ou pendant le reste de la période d'assistance
+si elle est plus longue."""
+tags = ["période d'assistance", "mises à jour"]
+
+[[questions]]
+id = "q005"
+lang = "en"
+type = "lookup"
+question = "What is the maximum fine if our product does not meet the essential cybersecurity requirements?"
+expected = ["cra:art_64"]
+answer = """Up to EUR 15 000 000 or, for an undertaking, up to 2.5 % of its total worldwide annual
+turnover for the preceding financial year, whichever is higher. The same ceiling applies to breaches
+of the obligations in Articles 13 and 14."""
+tags = ["penalties"]
+
+[[questions]]
+id = "q006"
+lang = "en"
+type = "lookup"
+question = "When does a vulnerability count as 'actively exploited' under the CRA?"
+expected = ["cra:art_3"]
+answer = """When there is reliable evidence that a malicious actor has exploited it in a system
+without the permission of the system owner (Article 3, point 42)."""
+tags = ["definitions", "reporting"]
+
+[[questions]]
+id = "q007"
+lang = "fr"
+type = "trap"
+question = "Depuis quand les exigences de cybersécurité du règlement délégué RED sont-elles obligatoires pour les équipements radio ?"
+expected = ["red-da:art_3"]
+answer = """Depuis le 1er août 2025. Le texte d'origine indiquait le 1er août 2024, mais la date a été
+reportée par le règlement délégué (UE) 2023/2444."""
+tags = ["RED", "dates d'application"]
+notes = "Le corpus ne contient pas encore 2023/2444 : un assistant qui répond 2024 se trompe."
+
+[[questions]]
+id = "q008"
+lang = "fr"
+type = "out_of_scope"
+question = "Quelles exigences de la norme EN 18031-1 portent sur l'authentification ?"
+expected = []
+answer = """Les textes du corpus ne contiennent pas la norme EN 18031-1. L'assistant doit le dire et
+ne pas inventer le contenu de la norme."""
+tags = ["RED", "normes"]

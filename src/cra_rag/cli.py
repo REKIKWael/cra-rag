@@ -5,10 +5,11 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from cra_rag import download, parse
+from cra_rag import download, parse, questions
 
 RAW_DIR = Path("corpus/raw")
 SECTIONS_FILE = Path("data/sections.jsonl")
+QUESTIONS_TARGET = 40
 
 
 def _download(args: argparse.Namespace) -> int:
@@ -56,6 +57,30 @@ def _show(args: argparse.Namespace) -> int:
     return 1
 
 
+def _questions(args: argparse.Namespace) -> int:
+    sections = parse.parse_corpus(args.raw)
+    try:
+        question_set = questions.load(args.file)
+    except questions.QuestionsError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    problems = questions.check(question_set, {s.id for s in sections})
+    for problem in problems:
+        print(f"Problem: {problem}", file=sys.stderr)
+
+    langs = Counter(q.lang for q in question_set)
+    types = Counter(q.type for q in question_set)
+    print(f"{len(question_set)} questions (target: {QUESTIONS_TARGET})")
+    print("  by language: " + ", ".join(f"{lang} {langs[lang]}" for lang in questions.LANGS))
+    print("  by type:     " + ", ".join(f"{kind} {types[kind]}" for kind in questions.TYPES))
+    print("Questions per part of the corpus:")
+    for part, count in questions.coverage(question_set, sections).items():
+        print(f"  {count:>3}  {part}{'   <- not covered yet' if count == 0 else ''}")
+    if problems:
+        print(f"{len(problems)} problem(s) to fix, listed above.", file=sys.stderr)
+    return 1 if problems else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="cra-rag",
@@ -79,6 +104,11 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--lang", choices=["en", "fr"], default="en")
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_show)
+
+    cmd = commands.add_parser("questions", help="check the reference questions and their coverage")
+    cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_questions)
 
     args = parser.parse_args(argv)
     return args.handler(args)
