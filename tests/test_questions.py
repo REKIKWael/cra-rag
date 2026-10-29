@@ -51,6 +51,14 @@ def test_reports_invalid_toml_with_its_line(tmp_path):
         load_text(tmp_path, VALID.replace('lang = "fr"', "lang = fr"))
 
 
+def test_explains_a_file_not_saved_as_utf8(tmp_path):
+    path = tmp_path / "questions.toml"
+    path.write_bytes(VALID.encode("cp1252"))  # "é" written the Windows-1252 way
+
+    with pytest.raises(questions.QuestionsError, match="not saved as UTF-8.*line 6"):
+        questions.load(path)
+
+
 @pytest.mark.parametrize(
     ("question", "problem"),
     [

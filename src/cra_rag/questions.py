@@ -36,8 +36,18 @@ class QuestionsError(ValueError):
 
 def load(path: Path = QUESTIONS_FILE) -> list[Question]:
     """Read the file. Raises QuestionsError listing every structural problem."""
+    raw = path.read_bytes()
     try:
-        data = tomllib.loads(path.read_text(encoding="utf-8"))
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        line = raw[: exc.start].count(b"\n") + 1
+        raise QuestionsError(
+            f"{path} is not saved as UTF-8 (unexpected byte at line {line}). Your editor "
+            "probably saved it as Windows-1252. In VS Code, click the encoding at the bottom "
+            "right of the window, choose 'Save with Encoding', then 'UTF-8'."
+        ) from exc
+    try:
+        data = tomllib.loads(text)
     except tomllib.TOMLDecodeError as exc:
         raise QuestionsError(f"{path} is not valid TOML: {exc}") from exc
 
