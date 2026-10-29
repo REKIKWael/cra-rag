@@ -5,7 +5,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from cra_rag import download, parse, questions
+from cra_rag import chunks, download, evaluate, parse, questions, search
 
 RAW_DIR = Path("corpus/raw")
 SECTIONS_FILE = Path("data/sections.jsonl")
@@ -81,6 +81,52 @@ def _questions(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _indexes(raw: Path) -> tuple[list[parse.Section], list[chunks.Chunk], dict]:
+    sections = parse.parse_corpus(raw)
+    chunk_list = chunks.chunk_sections(sections)
+    indexes = {lang: search.BM25Index(chunk_list, lang) for lang in questions.LANGS}
+    return sections, chunk_list, indexes
+
+
+def _search(args: argparse.Namespace) -> int:
+    sections, chunk_list, indexes = _indexes(args.raw)
+    section_by_key = {(s.id, s.lang): s for s in sections}
+    chunk_by_id = {c.id: c for c in chunk_list}
+    for rank, hit in enumerate(indexes[args.lang].search(args.question, args.k), start=1):
+        section = section_by_key[(hit.section_id, args.lang)]
+        name = f"{section.label}: {section.title}" if section.title else section.label
+        print(f"{rank:>2}. {hit.section_id:<14} score {hit.score:5.1f}  {name}")
+        excerpt = chunk_by_id[hit.chunk_id].text.split("\n", 1)[-1].replace("\n", " ")
+        print(f"    {excerpt[:150]}...")
+    return 0
+
+
+def _eval_search(args: argparse.Namespace) -> int:
+    _, _, indexes = _indexes(args.raw)
+    question_set = questions.load(args.file)
+    results = evaluate.run(question_set, lambda q: indexes[q.lang].search(q.question, 10))
+
+    columns = [f"recall@{k}" for k in evaluate.KS] + ["mrr"]
+    groups = {"all": results}
+    for lang in questions.LANGS:
+        groups[lang] = [r for r in results if r.question.lang == lang]
+    for kind in ("lookup", "multi", "trap"):
+        groups[kind] = [r for r in results if r.question.type == kind]
+
+    print(f"BM25 on {len(results)} questions (out_of_scope questions have nothing to find)")
+    print(f"{'':<8}{'n':>4}" + "".join(f"{c:>11}" for c in columns))
+    for name, group in groups.items():
+        scores = evaluate.summary(group)
+        print(f"{name:<8}{len(group):>4}" + "".join(f"{scores[c]:>11.2f}" for c in columns))
+
+    misses = [r for r in results if r.recall(5) < 1]
+    print(f"\nNot fully found in the top 5 ({len(misses)} questions):")
+    for r in misses:
+        print(f"  {r.question.id}  expected {', '.join(r.question.expected)}")
+        print(f"        got      {', '.join(r.ranking[:5])}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="cra-rag",
@@ -109,6 +155,18 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_questions)
+
+    cmd = commands.add_parser("search", help='find the sections answering a question: search "..."')
+    cmd.add_argument("question")
+    cmd.add_argument("--lang", choices=list(questions.LANGS), default="fr")
+    cmd.add_argument("-k", type=int, default=5, help="number of sections to show")
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_search)
+
+    cmd = commands.add_parser("eval-search", help="score the search on the reference questions")
+    cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_eval_search)
 
     args = parser.parse_args(argv)
     return args.handler(args)

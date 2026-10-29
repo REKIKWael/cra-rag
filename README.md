@@ -53,7 +53,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 1. Project skeleton: packaging (uv), lint (ruff), tests (pytest), CI
 - [x] 2. Corpus ingestion: download the texts, split them into articles, annexes and recitals
 - [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
-- [ ] 4. Retrieval: embeddings and a vector store, measured with recall@k
+- [ ] 4. Retrieval, measured with recall@k: BM25 baseline (done), then embeddings and a vector store
 - [ ] 5. Generation: cited answers from a language model behind a provider interface
 - [ ] 6. FastAPI service and Docker image
 - [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
@@ -66,11 +66,28 @@ Requires [uv](https://docs.astral.sh/uv/).
 uv run cra-rag parse                    # split the texts into sections -> data/sections.jsonl
 uv run cra-rag show cra:art_14          # print one section (add --lang fr for French)
 uv run cra-rag questions                # check the reference questions in eval/questions.toml
+uv run cra-rag search "Qui doit-on prévenir quand une faille est exploitée ?"
+uv run cra-rag eval-search              # score the search on the reference questions
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 
 Section ids follow the European Legislation Identifier markup of the Official
 Journal: `cra:art_14` (Article 14), `cra:anx_I` (Annex I), `cra:rct_5` (Recital 5).
+
+## Retrieval results
+
+Measured on the 36 reference questions that have an answer in the corpus
+(the 4 `out_of_scope` ones have nothing to find). Recall@k is the share of the
+expected sections found in the first k results; MRR rewards finding the first
+one early (1 if it is ranked first, 1/2 if second...).
+
+| Method | recall@1 | recall@3 | recall@5 | recall@10 | MRR |
+|---|---|---|---|---|---|
+| BM25 (keywords, stemmed) | 0.25 | 0.44 | 0.57 | 0.86 | 0.50 |
+
+The questions are worded the way manufacturers ask them, not with the words of
+the regulation. Keyword search often misses them: that gap is what semantic
+search has to close. A test in CI fails if BM25 falls below recall@10 = 0.80.
 
 ## Development
 
