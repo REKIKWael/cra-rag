@@ -65,6 +65,17 @@ class Hit:
     chunk_id: str  # the chunk that gave the section its score
 
 
+def best_per_section(hits: list[Hit]) -> list[Hit]:
+    """Keep the first (best) hit of each section, in order."""
+    seen: set[str] = set()
+    best = []
+    for hit in hits:
+        if hit.section_id not in seen:
+            seen.add(hit.section_id)
+            best.append(hit)
+    return best
+
+
 class BM25Index:
     """BM25 over the chunks of one language (k1 and b are the usual defaults)."""
 
@@ -93,11 +104,12 @@ class BM25Index:
                 scores[index] += idf * count * (self.k1 + 1) / (count + norm)
         return scores
 
+    def search_chunks(self, question: str, n: int = 50) -> list[Hit]:
+        """The n best chunks for the question, best first."""
+        scores = self.score_chunks(question)
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)[:n]
+        return [Hit(self.chunks[i].section_id, score, self.chunks[i].id) for i, score in ranked]
+
     def search(self, question: str, k: int = 10) -> list[Hit]:
-        """The k best sections for the question, best first."""
-        best: dict[str, Hit] = {}
-        for index, score in self.score_chunks(question).items():
-            chunk = self.chunks[index]
-            if chunk.section_id not in best or score > best[chunk.section_id].score:
-                best[chunk.section_id] = Hit(chunk.section_id, score, chunk.id)
-        return sorted(best.values(), key=lambda hit: hit.score, reverse=True)[:k]
+        """The k best sections for the question, each scored by its best chunk."""
+        return best_per_section(self.search_chunks(question, n=len(self.chunks)))[:k]

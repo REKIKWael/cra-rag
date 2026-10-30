@@ -6,7 +6,19 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from cra_rag import chunks, dense, download, embed, evaluate, parse, questions, retriever, search
+from cra_rag import (
+    answer,
+    chunks,
+    dense,
+    download,
+    embed,
+    evaluate,
+    llm,
+    parse,
+    questions,
+    retriever,
+    search,
+)
 
 RAW_DIR = Path("corpus/raw")
 SECTIONS_FILE = Path("data/sections.jsonl")
@@ -129,6 +141,47 @@ def _search(args: argparse.Namespace) -> int:
         print(f"{rank:>2}. {hit.section_id:<14} score {hit.score:6.3f}  {name}")
         excerpt = chunk_by_id[hit.chunk_id].text.split("\n", 1)[-1].replace("\n", " ")
         print(f"    {excerpt[:150]}...")
+    return 0
+
+
+def _ask(args: argparse.Namespace) -> int:
+    method = args.method
+    if method == "auto":
+        method = "hybrid" if (dense.INDEX_DIR / "qdrant").exists() else "bm25"
+    searcher = _open_retriever(args.raw, [method])
+    if searcher is None:
+        return 1
+    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
+    model = llm.OllamaLLM(model=args.model)
+    print(f"Searching with {method}, then writing the answer with {args.model}...\n")
+    try:
+        result = answer.answer(
+            args.question,
+            lang,
+            searcher,
+            model,
+            method=method,
+            passages=args.passages,
+            on_token=lambda piece: print(piece, end="", flush=True),
+        )
+    except (embed.EmbeddingError, llm.LLMError) as exc:
+        print(f"\nError: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        searcher.close()
+
+    print("\n\nSources given to the model:")
+    for source in result.sources:
+        mark = "*" if source.id in result.citations else " "
+        print(f" {mark} [{source.id}] {source.name}\n     {source.url}")
+    print("   (* = cited in the answer)")
+    for cited in result.unsupported_citations:
+        print(f"Warning: the answer cites {cited}, which was not among the sources.")
+    c = result.completion
+    print(
+        f"\nRead {c.prompt_tokens} tokens in {c.prompt_seconds:.0f} s, "
+        f"wrote {c.output_tokens} tokens in {c.output_seconds:.0f} s."
+    )
     return 0
 
 
@@ -256,6 +309,15 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_search)
+
+    cmd = commands.add_parser("ask", help='answer a question with citations: ask "..."')
+    cmd.add_argument("question")
+    cmd.add_argument("--lang", choices=["auto", *questions.LANGS], default="auto")
+    cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
+    cmd.add_argument("--passages", type=int, default=8, help="passages given to the model")
+    cmd.add_argument("--model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_ask)
 
     cmd = commands.add_parser("index", help="build the vector index (needs Ollama, ~12 min)")
     cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)

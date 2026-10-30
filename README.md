@@ -56,7 +56,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 2. Corpus ingestion: download the texts, split them into articles, annexes and recitals
 - [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
 - [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
-- [ ] 5. Generation: cited answers from a language model behind a provider interface
+- [ ] 5. Generation: cited answers from a language model behind a provider interface (in progress)
 - [ ] 6. FastAPI service and Docker image
 - [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
 
@@ -73,6 +73,7 @@ uv run cra-rag eval-search              # score the search on the reference ques
 uv run cra-rag embed-speed              # time the embedding model (needs Ollama and bge-m3)
 uv run cra-rag index                    # build the vector index (Ollama + bge-m3, once)
 uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid search
+uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 

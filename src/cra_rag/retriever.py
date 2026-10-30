@@ -45,3 +45,32 @@ class Retriever:
             self.dense.search(question, lang, FUSION_DEPTH),
         ]
         return dense.reciprocal_rank_fusion(rankings, k)
+
+    def search_chunks(
+        self, method: str, question: str, lang: str, n: int = 8, per_section: int = 3
+    ) -> list[Hit]:
+        """The n best passages, at most `per_section` from the same section.
+
+        Used to build the answer: the passage holding the answer is not always the
+        one that ranked its section first (Article 14 opens with the deadlines,
+        but a question can match its paragraph 8 better).
+        """
+        if method == "bm25":
+            ranked = self.bm25[lang].search_chunks(question)
+        elif self.dense is None:
+            raise dense.IndexMissingError(f"The {method} method needs the vector index.")
+        elif method == "dense":
+            ranked = self.dense.search_chunks(question, lang)
+        else:
+            ranked = dense.fuse_chunks(
+                [self.bm25[lang].search_chunks(question), self.dense.search_chunks(question, lang)]
+            )
+        kept: list[Hit] = []
+        per: dict[str, int] = {}
+        for hit in ranked:
+            if per.get(hit.section_id, 0) < per_section:
+                kept.append(hit)
+                per[hit.section_id] = per.get(hit.section_id, 0) + 1
+            if len(kept) == n:
+                break
+        return kept

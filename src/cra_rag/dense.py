@@ -22,7 +22,7 @@ from qdrant_client import QdrantClient, models
 
 from cra_rag.chunks import Chunk
 from cra_rag.embed import OllamaEmbedder
-from cra_rag.search import SEARCHED_KINDS, Hit
+from cra_rag.search import SEARCHED_KINDS, Hit, best_per_section
 
 INDEX_DIR = Path("data/index")
 
@@ -159,28 +159,21 @@ class DenseIndex:
     def close(self) -> None:
         self.client.close()
 
-    def search(
-        self, question: str, lang: str | None, k: int = 10, candidates: int = 50
-    ) -> list[Hit]:
-        """The k closest sections; `lang` limits the search to one language (None: both)."""
+    def search_chunks(self, question: str, lang: str | None, n: int = 50) -> list[Hit]:
+        """The n closest chunks, best first; `lang` limits the search to one language."""
         [vector] = embed_cached([question], self.embedder, self.cache)
         condition = None
         if lang:
             match = models.FieldCondition(key="lang", match=models.MatchValue(value=lang))
             condition = models.Filter(must=[match])
         points = self.client.query_points(
-            self.collection,
-            query=vector,
-            limit=candidates,
-            query_filter=condition,
-            with_payload=True,
+            self.collection, query=vector, limit=n, query_filter=condition, with_payload=True
         ).points
-        best: dict[str, Hit] = {}
-        for point in points:  # best first: keep the first chunk seen for each section
-            section_id = point.payload["section_id"]
-            if section_id not in best:
-                best[section_id] = Hit(section_id, point.score, point.payload["chunk_id"])
-        return list(best.values())[:k]
+        return [Hit(p.payload["section_id"], p.score, p.payload["chunk_id"]) for p in points]
+
+    def search(self, question: str, lang: str | None, k: int = 10) -> list[Hit]:
+        """The k closest sections, each scored by its closest chunk."""
+        return best_per_section(self.search_chunks(question, lang))[:k]
 
 
 def reciprocal_rank_fusion(
@@ -200,3 +193,15 @@ def reciprocal_rank_fusion(
             chunk_of.setdefault(hit.section_id, hit.chunk_id)
     ordered = sorted(scores, key=scores.get, reverse=True)[:k]
     return [Hit(section_id, scores[section_id], chunk_of[section_id]) for section_id in ordered]
+
+
+def fuse_chunks(rankings: list[list[Hit]], n: int = 50, smoothing: int = 60) -> list[Hit]:
+    """The same fusion, passage by passage instead of section by section."""
+    scores: dict[str, float] = {}
+    hit_of: dict[str, Hit] = {}
+    for ranking in rankings:
+        for rank, hit in enumerate(ranking, start=1):
+            scores[hit.chunk_id] = scores.get(hit.chunk_id, 0.0) + 1 / (smoothing + rank)
+            hit_of.setdefault(hit.chunk_id, hit)
+    ordered = sorted(scores, key=scores.get, reverse=True)[:n]
+    return [Hit(hit_of[c].section_id, scores[c], c) for c in ordered]
