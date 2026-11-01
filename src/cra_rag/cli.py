@@ -231,6 +231,14 @@ def _eval_answers(args: argparse.Namespace) -> int:
     return 0
 
 
+def _serve(args: argparse.Namespace) -> int:
+    import uvicorn  # imported here: the other commands do not need it
+
+    print(f"API documentation: http://{args.host}:{args.port}/docs  (Ctrl+C to stop)")
+    uvicorn.run("cra_rag.api:app", host=args.host, port=args.port)
+    return 0
+
+
 COLUMNS = [f"recall@{k}" for k in evaluate.KS] + ["mrr"]
 
 
@@ -375,6 +383,11 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_answers)
+
+    cmd = commands.add_parser("serve", help="run the HTTP API (documentation at /docs)")
+    cmd.add_argument("--host", default="127.0.0.1")
+    cmd.add_argument("--port", type=int, default=8000)
+    cmd.set_defaults(handler=_serve)
 
     cmd = commands.add_parser("index", help="build the vector index (needs Ollama, ~12 min)")
     cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)

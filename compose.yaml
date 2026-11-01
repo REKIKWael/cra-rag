@@ -1,0 +1,31 @@
+# The API and Ollama together.
+#
+#   docker compose up --detach
+#   docker compose exec ollama ollama pull bge-m3
+#   docker compose exec ollama ollama pull ministral-3:3b
+#   docker compose run --rm api cra-rag index      # once: the vector index
+#   docker compose restart api
+#   -> http://localhost:8000/docs
+#
+# Models and index live in volumes: they survive "docker compose down".
+
+services:
+  ollama:
+    image: ollama/ollama:0.40.13
+    volumes:
+      - ollama-models:/root/.ollama
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      CRA_RAG_OLLAMA_URL: http://ollama:11434
+    volumes:
+      - index:/app/data
+    depends_on:
+      - ollama
+
+volumes:
+  ollama-models:
+  index:

@@ -30,3 +30,35 @@ jobs:
 
       - name: Tests
         run: uv run pytest
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the image
+        run: docker build --tag cra-rag .
+
+      - name: Start the API (BM25 only, there is no Ollama here)
+        run: docker run --detach --name api --publish 8000:8000 cra-rag
+
+      - name: Smoke test
+        run: |
+          for attempt in $(seq 1 30); do
+            curl --silent --fail http://localhost:8000/health && break
+            sleep 2
+          done
+          curl --silent --fail --get http://localhost:8000/search \
+            --data-urlencode "q=reporting deadline for an actively exploited vulnerability" \
+            --data-urlencode "method=bm25" > search.json
+          python3 -c "
+          import json
+          ids = [r['id'] for r in json.load(open('search.json'))['results']]
+          print('found:', ids)
+          assert 'cra:art_14' in ids, 'Article 14 should come out of this search'
+          "
+
+      - name: Server logs
+        if: always()
+        run: docker logs api

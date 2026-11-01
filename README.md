@@ -14,7 +14,7 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 5 of 7 done (cited answers).
+> **Status:** work in progress, step 6 of 7 done (API and Docker).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -57,7 +57,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
 - [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
 - [x] 5. Generation: cited answers from a local model behind a provider interface, checked on the 40 questions
-- [ ] 6. FastAPI service and Docker image
+- [x] 6. FastAPI service and Docker image, built and smoke-tested in CI
 - [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
 
 ## Usage
@@ -80,6 +80,35 @@ uv run cra-rag download                 # refresh the texts from the EU Publicat
 
 Section ids follow the European Legislation Identifier markup of the Official
 Journal: `cra:art_14` (Article 14), `cra:anx_I` (Annex I), `cra:rct_5` (Recital 5).
+
+## Run as a service
+
+The same features as an HTTP API (FastAPI), documented at `/docs`:
+
+```bash
+uv run cra-rag serve                    # then open http://127.0.0.1:8000/docs
+curl "http://127.0.0.1:8000/search?q=reporting+deadline+exploited+vulnerability"
+curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" \
+     -d '{"question": "What must the EU declaration of conformity contain?"}'
+```
+
+| Endpoint | Does |
+|---|---|
+| `GET /health` | Service status, search methods available, whether Ollama answers |
+| `GET /search?q=...` | The sections that best answer a question, with links to EUR-Lex |
+| `POST /ask` | A cited answer, its sources, and any citation not backed by a source |
+
+With Docker, the API and Ollama run together ([`compose.yaml`](compose.yaml)):
+
+```bash
+docker compose up --detach
+docker compose exec ollama ollama pull bge-m3
+docker compose exec ollama ollama pull ministral-3:3b
+docker compose run --rm api cra-rag index    # once: the vector index
+docker compose restart api                   # then http://localhost:8000/docs
+```
+
+The CI builds the image on every push, starts it and checks `/health` and `/search`.
 
 ## Retrieval results
 

@@ -1,0 +1,11 @@
+# Not needed in the image: keeps it small and the build fast
+.git
+.github
+.venv
+.vscode
+.pytest_cache
+.ruff_cache
+**/__pycache__
+data
+eval
+tests
