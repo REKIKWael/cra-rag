@@ -58,10 +58,15 @@ def test_a_correct_answer_passes_every_check():
     }
 
 
-def test_an_out_of_scope_question_must_be_refused():
-    q = question(qid="q008", expected=(), kind="out_of_scope")
-    record = {"answer": "...", "sources": ["cra:art_14"]}
-    assert answer_eval.checks(q, record)["refused"] is False
+def test_an_out_of_scope_question_must_be_declined():
+    q = question(qid="q040", expected=(), kind="out_of_scope")
+    invented = {"answer": "Il faut écrire au CERT-FR.", "sources": ["cra:art_14"]}
+    honest = {
+        "answer": "Via la plateforme unique [cra:art_14]. Les textes ne précisent pas l'organisme.",
+        "sources": ["cra:art_14"],
+    }
+    assert answer_eval.checks(q, invented)["declines"] is False
+    assert answer_eval.checks(q, honest)["declines"] is True
 
 
 def test_key_figures_written_in_millions_match_digits():
@@ -110,6 +115,6 @@ def test_the_report_shows_scores_and_every_answer(tmp_path, bm25_only):
     answer_eval.write_report(qs, records, report)
     text = report.read_text(encoding="utf-8")
 
-    assert "| Refuses out-of-scope questions | 1/1 (100%) |" in text
+    assert "| Says when the texts do not answer (out of scope) | 1/1 (100%) |" in text
     assert "| Answers (no false refusal) | 0/1 (0%) |" in text
     assert "## q001 · lookup · fr · TO CHECK" in text

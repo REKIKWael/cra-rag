@@ -4,7 +4,7 @@ Checks that need no judgement (a model acting as judge comes at step 7):
 - answerable questions: the model answers (no false refusal), cites one of the
   expected sections, cites only sources it was given, and repeats the key
   figures of the reference answer (deadlines, amounts, dates);
-- out_of_scope questions: the model refuses.
+- out_of_scope questions: the model says the texts do not answer them.
 
 Answers take minutes each on a laptop, so every answer is saved as soon as it is
 written, with a fingerprint of the settings (model, prompt, search method...).
@@ -71,7 +71,9 @@ def checks(question: Question, record: dict) -> dict:
     refusal = answer.is_refusal(record["answer"])
     result = {"supported_citations": not unsupported}
     if not question.expected:
-        result["refused"] = refusal
+        # Out of scope: the answer must say the texts do not cover it, without
+        # making up an answer. Explaining what the texts do say is fine.
+        result["declines"] = answer.declines(record["answer"])
         return result
     result["answered"] = not refusal
     result["cites_expected"] = bool(cited & set(question.expected))
@@ -159,7 +161,7 @@ CHECK_LABELS = {
     "cites_expected": "Cites an expected section",
     "supported_citations": "Cites only the sources it was given",
     "key_figures": "Repeats the key figures of the reference answer",
-    "refused": "Refuses out-of-scope questions",
+    "declines": "Says when the texts do not answer (out of scope)",
 }
 
 

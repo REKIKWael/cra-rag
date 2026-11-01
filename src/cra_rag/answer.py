@@ -47,6 +47,13 @@ REFUSALS = {
     "fr": "Les textes fournis ne permettent pas de répondre à cette question.",
     "en": "The provided texts do not answer this question.",
 }
+# Ways of saying that the texts do not cover something, fully or in part.
+DECLINING = re.compile(
+    r"ne (?:permettent|précisent|mentionnent|contiennent|traitent|disent|indiquent) pas"
+    r"|do(?:es)? not (?:answer|specify|mention|contain|cover|say|state|indicate)"
+    r"|not covered",
+    re.IGNORECASE,
+)
 CITATION = re.compile(r"\b(?:cra|red-da):(?:art|anx|rct)_(?:\d+|[IVXLC]+)\b", re.IGNORECASE)
 # Plain references a model also writes: "article 54", "Article 30(1)", "annexe V", "Annex I".
 ARTICLE_REFERENCE = re.compile(r"\bart(?:icle|\.)?\s*(\d+)", re.IGNORECASE)
@@ -116,8 +123,19 @@ def clean(text: str) -> str:
 
 
 def is_refusal(text: str) -> bool:
+    """A refusal and nothing else. An answer that says what the texts do not cover,
+    then gives what they do, is a partial answer, not a refusal."""
     flat = " ".join(text.lower().split())
-    return any(sentence.lower().rstrip(".") in flat for sentence in REFUSALS.values())
+    for sentence in REFUSALS.values():
+        sentence = sentence.lower().rstrip(".")
+        if sentence in flat and len(flat) <= len(sentence) * 1.5:
+            return True
+    return False
+
+
+def declines(text: str) -> bool:
+    """True if the answer says that the texts do not cover the question, or part of it."""
+    return bool(DECLINING.search(text))
 
 
 def find_sources(

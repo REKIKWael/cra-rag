@@ -103,6 +103,15 @@ def test_an_ordinary_answer_is_not_a_refusal():
     assert not answer.is_refusal("Au plus tard 24 heures après en avoir eu connaissance.")
 
 
+def test_a_partial_answer_with_a_caveat_is_not_a_refusal():
+    text = (
+        "Les textes fournis ne permettent pas de répondre à cette question de manière "
+        "exhaustive. Cependant, l'article 14 s'applique dès le 11 septembre 2026 [cra:art_71]."
+    )
+    assert not answer.is_refusal(text)
+    assert answer.declines(text)
+
+
 def fake_ollama_stream(request):
     lines = [
         {"message": {"content": "Au plus "}, "done": False},

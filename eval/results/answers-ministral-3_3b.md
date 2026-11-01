@@ -5,13 +5,13 @@ of correctness by a model comes at step 7.
 
 | Check | Result |
 |---|---|
-| Answers (no false refusal) | 30/36 (83%) |
-| Cites an expected section | 24/36 (67%) |
-| Cites only the sources it was given | 38/40 (95%) |
+| Answers (no false refusal) | 34/36 (94%) |
+| Cites an expected section | 29/36 (81%) |
+| Cites only the sources it was given | 39/40 (98%) |
 | Repeats the key figures of the reference answer | 2/8 (25%) |
-| Refuses out-of-scope questions | 2/4 (50%) |
+| Says when the texts do not answer (out of scope) | 4/4 (100%) |
 
-Median time per answer: 123 s on the machine that ran it.
+Median time per answer: 122 s on the machine that ran it.
 
 ## q001 · lookup · fr · TO CHECK
 
@@ -19,11 +19,11 @@ Median time per answer: 123 s on the machine that ran it.
 
 **Reference answer:** Notifier simultanément le CSIRT désigné comme coordinateur et l'ENISA, via la plateforme unique de signalement : alerte précoce au plus tard 24 heures après en avoir eu connaissance, notification de la vulnérabilité au plus tard 72 heures après, rapport final au plus tard 14 jours après la mise à disposition d'une mesure de correction ou d'atténuation.
 
-**Model answer:** Selon le **CRA [cra:art_14]**, le fabricant doit prévenir **d’abord le CSIRT désigné comme coordinateur** et **l’ENISA** en notifiant la vulnérabilité activement exploitée **sans retard injustifié**, au plus tard **24 heures après la prise de connaissance** [cra:art_14:paragraphe 2a]. La notification doit être faite via la **plateforme unique de signalement** [cra:art_16]. Les sources ne précisent pas de délai supplémentaire pour les États membres concernés, mais le fabricant doit indiquer **les États membres où la faille a été exploitée** [cra:art_14:paragraphe 2b]. Si la vulnérabilité est exploitée **uniquement dans un État membre** et que sa diffusion pourrait menacer des intérêts essentiels de cet État, la notification peut être retardée sous conditions précises [cra:art_16:points a-c].
+**Model answer:** Le fabricant doit d’abord prévenir le CSIRT désigné comme coordinateur et l’ENISA en notifiant la vulnérabilité activement exploitée sans retard injustifié, idéalement au plus tard 24 heures après la découverte [cra:art_14, paragraphe 2a]. La notification se fait via la plateforme unique de signalement prévue à l’article 16. Si la faille est exploitée uniquement dans un État membre et que sa diffusion pourrait nuire aux intérêts essentiels de celui-ci (cas exceptionnel), le fabricant peut demander un report de diffusion via la plateforme [cra:art_16, points a et b]. Sinon, la notification doit être publique. Le fabricant doit aussi informer les utilisateurs du produit concerné, en fournissant des mesures correctives si nécessaire, sous peine que les CSIRTs coordonnés le fassent à leur place [cra:art_14, paragraphe 8]. Les sources ne précisent pas de délai strict pour cette étape, mais elle doit être temporelle et proportionnée.
 
 Expected: cra:art_14 · cited: cra:art_14, cra:art_16 · given: cra:art_14, cra:anx_I, cra:art_16, cra:art_13, cra:art_57
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 128 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 143 s
 
 ## q002 · trap · fr · TO CHECK
 
@@ -31,11 +31,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes, key_figures N
 
 **Reference answer:** Oui. Le règlement s'applique à partir du 11 décembre 2027, mais l'article 14 (obligations de signalement) s'applique dès le 11 septembre 2026.
 
-**Model answer:** Les textes fournis ne permettent pas de répondre à cette question.
+**Model answer:** Les textes fournis ne permettent pas de répondre à cette question de manière exhaustive sur la nécessité d’organiser le signalement dès maintenant. Cependant, voici ce que les sources précisent : - Article 14 (applicable dès le 11 septembre 2026) impose déjà des obligations de signalement pour les vulnérabilités et incidents graves, même avant le 11 décembre 2027 [cra:art_14]. - Les obligations de signalement s’appliquent dès le 11 septembre 2026 pour les produits mis sur le marché à partir de cette date [cra:art_69, paragraphe 3]. - Les CSIRT doivent fournir un service d’assistance aux fabricants dès maintenant pour respecter ces obligations [cra:art_17, paragraphe 6]. Les sources ne précisent pas de délai avant décembre 2027 pour les produits déjà existants, mais les obligations de signalement existent déjà pour les nouveaux produits.
 
-Expected: cra:art_71 · cited: none · given: cra:art_17, cra:art_16, cra:art_70, cra:art_69, cra:art_71
+Expected: cra:art_71 · cited: cra:art_14, cra:art_69, cra:art_17 · given: cra:art_17, cra:art_16, cra:art_70, cra:art_69, cra:art_71
 
-Checks: supported_citations yes, answered NO, cites_expected NO, key_figures NO · 80 s
+Checks: supported_citations NO, answered yes, cites_expected NO, key_figures yes · 153 s
 
 ## q003 · multi · fr · OK
 
@@ -43,11 +43,11 @@ Checks: supported_citations yes, answered NO, cites_expected NO, key_figures NO 
 
 **Reference answer:** Les gestionnaires de mots de passe sont des produits importants de classe I (annexe III, article 7). Le contrôle interne (module A) n'est possible que si le fabricant applique entièrement des normes harmonisées, des spécifications communes ou un schéma européen de certification (niveau « substantiel » au minimum) ; sinon il faut passer par le module B suivi du module C, ou par le module H (article 32, paragraphe 2).
 
-**Model answer:** Non, un gestionnaire de mots de passe ne peut pas se contenter uniquement d’une **auto-évaluation** pour la conformité CRA. D’après l’[article 32][cra:art_32], le fabricant doit suivre une **procédure d’évaluation de la conformité** officielle, comme : - le **module A** (contrôle interne) *si le produit n’est pas considéré comme important* (classe I ou II non applicable ici), - ou une **évaluation par un organisme notifié** (module B ou H) pour les produits numériques critiques. Un gestionnaire de mots de passe, s’il comporte des éléments numériques sensibles, relève probablement de la **classe II** (risque élevé), exigeant alors un **examen UE de type (module B)** ou une **assurance qualité complète (module H)** via un organisme notifié. L’[article 39][cra:art_39] précise aussi que l’organisme doit être indépendant du fabricant.
+**Model answer:** Oui, selon les sources fournies, un gestionnaire de mots de passe peut utiliser une auto-évaluation interne (module A) pour démontrer la conformité à la CRA, à condition qu’il respecte les exigences essentielles de cybersécurité de l’annexe I et que cette procédure soit validée par un organisme notifié si le produit relève d’une classe plus exigeante (comme la classe II de l’annexe III). Cependant, aucune source ne précise explicitement si un gestionnaire de mots de passe est classé dans une classe spécifique (I, II, III). Si le produit est considéré comme important (classe II), le fabricant doit alors suivre la procédure d’examen UE de type (module B) complétée par le contrôle interne de production (module C) [cra:art_32]. Sinon, l’auto-évaluation seule suffit [cra:art_32]. Les sources ne précisent pas de détails sur les exigences techniques à remplir pour le module A, mais il faut s’assurer que les processus internes (comme la gestion des vulnérabilités) respectent les exigences de l’annexe I. Aucune mention d’un schéma européen de certification (module D) n’est requise pour ce cas. À vérifier : la classification exacte du produit (classe
 
-Expected: cra:anx_III, cra:art_7, cra:art_32 · cited: cra:art_32, cra:art_39 · given: cra:art_3, cra:art_56, cra:art_32, cra:art_39, cra:anx_VIII
+Expected: cra:anx_III, cra:art_7, cra:art_32 · cited: cra:art_32 · given: cra:art_3, cra:art_56, cra:art_32, cra:art_39, cra:anx_VIII
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 152 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 176 s
 
 ## q004 · lookup · fr · OK
 
@@ -55,11 +55,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 152 s
 
 **Reference answer:** La période d'assistance est d'au moins cinq ans, sauf si le produit est censé être utilisé moins longtemps : elle correspond alors à sa durée d'utilisation prévue. Chaque mise à jour de sécurité publiée reste disponible au moins dix ans, ou pendant le reste de la période d'assistance si elle est plus longue.
 
-**Model answer:** Les fabricants doivent garantir la disponibilité des **mises à jour de sécurité** pendant **au moins dix ans** à partir de la mise sur le marché du produit, ou pendant la **période d’assistance** si celle-ci est plus longue [cra:art_13.9]. Pour les produits dont la **période d’assistance** est définie (ex. : 5 ans), la durée maximale de disponibilité des correctifs est donc de **10 ans** (10 ans après mise sur le marché).
+**Model answer:** Les fabricants doivent garantir la disponibilité des mises à jour de sécurité pour leurs produits pendant : - au moins dix ans à partir de la mise sur le marché, ou - pendant la période d’assistance du produit, en prenant la durée la plus longue [cra:art_13:9]. Cette obligation s’applique aux correctifs diffusés pendant la période d’assistance.
 
 Expected: cra:art_13 · cited: cra:art_13 · given: cra:anx_I, cra:art_19, cra:art_14, cra:art_13, cra:anx_VIII
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 98 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 92 s
 
 ## q005 · lookup · en · OK
 
@@ -67,11 +67,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 98 s
 
 **Reference answer:** Up to EUR 15 000 000 or, for an undertaking, up to 2.5 % of its total worldwide annual turnover for the preceding financial year, whichever is higher. The same ceiling applies to breaches of the obligations in Articles 13 and 14.
 
-**Model answer:** La sanction maximale pour non-respect des exigences essentielles en matière de cybersécurité (Annexe I) est de **15 millions d'euros** ou **2,5 % du chiffre d'affaires mondial annuel de l'exercice précédent**, selon le montant le plus élevé [cra:art_64]. Pour les obligations spécifiques à d'autres articles (comme les procédures de conformité ou les obligations de déclaration), la sanction maximale est de **10 millions d'euros** ou **2 % du chiffre d'affaires mondial annuel**, selon le montant le plus élevé [cra:art_64].
+**Model answer:** The maximum fine for non-compliance with the essential cybersecurity requirements in the CRA is EUR 15 million or 2.5% of the manufacturer’s total worldwide annual turnover for the preceding financial year, whichever is higher [cra:art_64].
 
-Expected: cra:art_64 · cited: cra:art_64, cra:anx_I · given: cra:art_64, cra:art_27, cra:art_56, cra:art_54, cra:anx_I, cra:art_32
+Expected: cra:art_64 · cited: cra:art_64 · given: cra:art_64, cra:art_27, cra:art_56, cra:art_54, cra:anx_I, cra:art_32
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures yes · 100 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures yes · 87 s
 
 ## q006 · lookup · en · OK
 
@@ -79,11 +79,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes, key_figures y
 
 **Reference answer:** When there is reliable evidence that a malicious actor has exploited it in a system without the permission of the system owner (Article 3, point 42).
 
-**Model answer:** D'après les textes fournis, une vulnérabilité est considérée comme **"activement exploitée"** sous le CRA lorsque : - il existe des preuves fiables que **un acteur malveillant l’a exploitée dans un système sans autorisation du propriétaire du système** [cra:art_3(42)]. Aucune autre condition de durée ou de contexte spécifique n'est précisée dans les sources fournies.
+**Model answer:** Under the CRA, a vulnerability counts as "actively exploited" when there is reliable evidence that a malicious actor has exploited it in a system without permission of the system owner [cra:art_3(42)]. This means the vulnerability must be confirmed to be used maliciously in real-world scenarios, not just theoretical or hypothetical exploitation.
 
 Expected: cra:art_3 · cited: cra:art_3 · given: cra:art_3, cra:art_14, cra:art_16, cra:art_15
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 84 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 83 s
 
 ## q007 · trap · fr · TO CHECK
 
@@ -91,11 +91,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 84 s
 
 **Reference answer:** Depuis le 1er août 2025. Le texte d'origine indiquait le 1er août 2024, mais la date a été reportée par le règlement délégué (UE) 2023/2444.
 
-**Model answer:** Les exigences de cybersécurité du règlement délégué RED (RED-da:art_1) s’appliquent **à partir de la date de mise en application de la directive 2014/53/UE**, qui est le **1er janvier 2018** pour les équipements radioélectriques connectés à l’internet capables de traiter des données personnelles ou des données de trafic/localisation [red-da:art_1]. Pour les équipements radioélectriques conçus pour être portés sur le corps ou permettant des transferts monétaires (RED-da:art_1), les exigences s’appliquent dès leur mise sur le marché, sans date précise mentionnée dans les sources.
+**Model answer:** Les exigences de cybersécurité du règlement délégué RED ne sont pas encore obligatoires pour les équipements radio dans leur forme actuelle. Les sources fournies ne précisent pas de date exacte d'application pour les exigences du RED délégué. Cependant, le RED délégué précise les conditions sous lesquelles ces exigences s'appliquent : - Pour les équipements radioélectriques capables de communiquer par eux-mêmes sur l’internet (directement ou via un autre équipement) [red-da:art_1]. - Pour les équipements radioélectriques qui traitent des données personnelles (RGPD) ou des données de trafic/localisation [red-da:art_1]. - Pour les équipements portés sur le corps ou intégrés à des vêtements [red-da:art_1]. - Pour les équipements permettant des transfers financiers (monnaie virtuelle) [red-da:art_1]. Les textes ne mentionnent pas de date d'entrée en vigueur pour ces exigences, mais la Commission pourrait les préciser via des actes délégués ou d'exécution ultérieurs. Aucune date n'est indiquée dans les sources fournies.
 
 Expected: red-da:art_3 · cited: red-da:art_1 · given: red-da:art_1, cra:art_2, cra:art_14, cra:art_27
 
-Checks: supported_citations yes, answered yes, cites_expected NO, key_figures NO · 149 s
+Checks: supported_citations yes, answered yes, cites_expected NO, key_figures NO · 162 s
 
 ## q008 · out_of_scope · fr · OK
 
@@ -107,7 +107,7 @@ Checks: supported_citations yes, answered yes, cites_expected NO, key_figures NO
 
 Expected: none (out of scope) · cited: none · given: cra:anx_VII, cra:anx_VIII, cra:art_32, cra:art_8, cra:art_27
 
-Checks: supported_citations yes, refused yes · 101 s
+Checks: supported_citations yes, declines yes · 98 s
 
 ## q009 · lookup · fr · OK
 
@@ -115,11 +115,11 @@ Checks: supported_citations yes, refused yes · 101 s
 
 **Reference answer:** Non : le produit doit être mis sur le marché avec une configuration de sécurité par défaut (annexe I, partie I, point 2 b)), avec la possibilité de le réinitialiser à son état d'origine. Seule exception : un accord contraire avec une entreprise utilisatrice pour un produit sur mesure.
 
-**Model answer:** Oui, selon les sources fournies, un fabricant peut livrer un produit comportant des éléments numériques avec certaines protections désactivées, à condition que les utilisateurs aient la possibilité de les activer librement et que les exigences essentielles de cybersécurité soient respectées. Les points clés sont : - Les produits doivent être conçus pour limiter les surfaces d’attaque et réduire les impacts des incidents (Annexe I, point **l**). - Les utilisateurs doivent pouvoir désactiver ou supprimer les mécanismes de sécurité si nécessaire (Annexe I, point **m**). - Les fabricants doivent garantir que les versions modifiées ne créent pas de coûts supplémentaires pour les utilisateurs existants (Article 13, paragraphe 10). - Les protections doivent être **accessibles et activables par l’utilisateur** sans restriction injustifiée. La conformité dépend de l’évaluation des risques et de la documentation technique (Article 13, paragraphe 12).
+**Model answer:** Oui, selon les sources fournies, un fabricant peut livrer un produit avec des protections cybersécurité désactivées, à condition que les utilisateurs aient la possibilité de les activer librement et que les exigences essentielles de l’Annexe I soient respectées. Plus précisément, l’article 14 ne s’oppose pas explicitement à cette pratique, et l’article 13, paragraphe 12, précise que les produits doivent permettre aux utilisateurs de désactiver les mécanismes de sécurité si nécessaire, tant que ces derniers peuvent les réactiver facilement. Cependant, l’Annexe I, point l) exige que les produits soient conçus pour enregistrer et surveiller les activités internes, mais laisse à l’utilisateur la possibilité de désactiver ce mécanisme. Cela implique que les protections doivent être activables par l’utilisateur sans restriction excessive. Les sources ne précisent pas de sanctions ou de conditions supplémentaires pour cette pratique, mais il faut s’assurer que les risques liés à la désactivation des protections sont clairement communiqués aux utilisateurs, comme évoqué dans l’article 13, paragraphe 12.
 
-Expected: cra:anx_I · cited: cra:art_13, cra:anx_I · given: cra:art_14, cra:art_13, cra:art_15, cra:anx_I, cra:art_59, cra:art_2
+Expected: cra:anx_I · cited: cra:art_14, cra:art_13, cra:anx_I · given: cra:art_14, cra:art_13, cra:art_15, cra:anx_I, cra:art_59, cra:art_2
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 134 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 138 s
 
 ## q010 · lookup · fr · OK
 
@@ -127,11 +127,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 134 s
 
 **Reference answer:** Au minimum : les coordonnées du fabricant ; le point de contact unique pour signaler les vulnérabilités et la politique de divulgation coordonnée ; l'identification du produit ; son utilisation prévue et ses propriétés de sécurité ; les risques de cybersécurité prévisibles ; l'adresse de la déclaration UE de conformité ; le type d'assistance et la date de fin de la période d'assistance ; des instructions pour la mise en service sécurisée, l'installation des mises à jour, la mise hors service avec suppression des données et la désactivation des mises à jour automatiques.
 
-**Model answer:** D’après les sources, la notice du produit **doit obligatoirement** inclure : - **Toutes les circonstances connues ou prévisibles** liées à son utilisation (usage prévu ou mauvaise utilisation raisonnablement prévisible) pouvant entraîner des **risques de cybersécurité importants** [cra:anx_II, point 5]. - **L’adresse internet exacte** où consulter la déclaration UE de conformité simplifiée ou complète [cra:art_13, paragraphe 20]. - **Le type d’assistance technique en sécurité** proposé par le fabricant, ainsi que la **date de fin de la période d’assistance** (durée des mises à jour de sécurité) [cra:anx_II, point 7]. - **Des instructions détaillées** (ou un lien vers elles) sur : - Les **mesures à prendre** lors de la mise en service et pendant toute la durée de vie du produit pour assurer sa sécurité [cra:anx_II, point 8a].
+**Model answer:** D’après les sources fournies, la notice de votre produit doit obligatoirement inclure : - Toutes les circonstances connues ou prévisibles liées à l’utilisation du produit, conformément à son utilisation prévue ou dans des conditions de mauvaise utilisation raisonnablement prévisible, susceptibles d’entraîner des risques de cybersécurité importants [cra:anx_II, point 5]. - L’adresse internet exacte où la déclaration UE de conformité complète est accessible si une déclaration simplifiée est jointe [cra:art_13, paragraphe 20]. - Le type d’assistance technique en matière de sécurité proposé par le fabricant et la date de fin de la période d’assistance pendant laquelle les utilisateurs peuvent s’attendre à recevoir des mises à jour de sécurité [cra:anx_II, point 7]. - Des instructions détaillées ou une adresse internet renvoyant à des instructions détaillées sur : - Les mesures nécessaires lors de la mise en service initiale du produit et pendant toute sa durée de vie pour assurer sa sécurité d’utilisation [cra:anx_II, point 8a]. Ce qui n’est pas obligatoire dans la notice selon les sources fournies : - Aucune mention explicite des exigences techniques précises de l’annexe I ou des détails sur la gestion des vulnérabilités (comme dans l’annexe
 
 Expected: cra:anx_II · cited: cra:anx_II, cra:art_13 · given: cra:art_13, cra:art_15, cra:art_8, cra:anx_II, cra:art_19, cra:art_30
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 145 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 166 s
 
 ## q011 · lookup · en · OK
 
@@ -139,11 +139,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 145 s
 
 **Reference answer:** It evaluates the product against all the requirements of the Regulation. If the product does not comply, it requires us to take corrective action, withdraw the product or recall it, within a reasonable period proportionate to the risk. If we do not act in time, it adopts provisional measures to prohibit or restrict the product on its national market, or to withdraw or recall it, and notifies the Commission and the other Member States.
 
-**Model answer:** La **autorité de surveillance du marché** (ASM) peut, selon l’article 54 du CRA, procéder à une évaluation de votre produit avec éléments numériques s’il présente un **risque cyber significatif**. Si elle confirme non-conformité, elle peut exiger : - **Mesures correctives** (amélioration du produit) dans un délai raisonnable, proportionnel au risque. - **Retrait ou rappel** du produit du marché, si nécessaire. Elle doit informer le **notifié body** concerné (selon la réglementation applicable à votre produit). Si le risque dépasse les frontières nationales, elle informe la **Commission européenne** et les autres États membres (article 54.3). Les ASM peuvent aussi coopérer pour des vérifications conjointes (article 59).
+**Model answer:** The market surveillance authority can require you to take corrective actions, withdraw or recall your product within a reasonable timeframe, depending on the cybersecurity risk severity. They must cooperate with you during evaluation and notify a notified body under Regulation (EU) 2019/1020 if non-compliance is found [cra:art_54]. If the risk is deemed significant due to non-technical factors, they must inform relevant national and EU authorities and cooperate with them [cra:art_54:para_2]. If the issue spans multiple Member States, they must inform the Commission and other Member States [cra:art_54:para_3]. For products already compliant but still posing risks to public interest (e.g., health, safety, essential services), they can still require corrective measures [cra:art_57:para_1]. If national efforts fail, the Commission may intervene at EU level, consult Member States, and request ENISA’s analysis before deciding on corrective or restrictive measures [cra:art_57:para_7–8]. The authority cannot impose fines or penalties beyond those outlined in other EU regulations (not covered here).
 
-Expected: cra:art_54 · cited: cra:art_54, cra:art_59 · given: cra:art_54, cra:art_56, cra:art_59, cra:art_57
+Expected: cra:art_54 · cited: cra:art_54, cra:art_57 · given: cra:art_54, cra:art_56, cra:art_59, cra:art_57
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 97 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 118 s
 
 ## q012 · lookup · fr · OK
 
@@ -151,11 +151,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 97 s
 
 **Reference answer:** Être constitué en droit national avec la personnalité juridique ; être un tiers indépendant des produits qu'il évalue (ni concepteur, ni fabricant, ni distributeur, ni consultant pour ces produits) ; garantir son impartialité, la rémunération du personnel ne dépendant ni du nombre ni du résultat des évaluations ; disposer d'un personnel compétent (formation technique, connaissance de l'annexe I, des normes harmonisées et des spécifications communes) et de procédures documentées pour exécuter les tâches de l'annexe VIII ; souscrire une assurance responsabilité civile ; respecter le secret professionnel ; participer à la normalisation et au groupe de coordination des organismes notifiés.
 
-**Model answer:** Pour devenir organisme notifié sous le **CRA**, un laboratoire d’essais doit répondre aux exigences suivantes : Un laboratoire doit être **constitué en personne morale** (personnalité juridique) et indépendant du fabricant ou du produit concerné [cra:art_39:par_2]. Il doit démontrer son indépendance et l’absence de conflit d’intérêts, même s’il appartient à une association d’entreprises ou d’une fédération professionnelle [cra:art_39:par_3]. Il doit soumettre une **demande de notification** à l’autorité notifiante de l’État membre où il est établi, accompagnée d’une description de ses activités et des procédures d’évaluation de la conformité qu’il propose [cra:art_42:par_1]. Si le laboratoire n’a pas de **certificat d’accréditation** délivré par un organisme national d’accréditation, il doit fournir des preuves documentaires attestant qu’il remplit les exigences de l’**article 39** [cra:art_42:par_3].
+**Model answer:** Pour devenir organisme notifié sous le CRA, un laboratoire d’essais doit remplir les conditions suivantes : Un laboratoire doit être constitué en vertu du droit national et posséder la personnalité juridique [cra:art_39:par_2]. Il doit être un organisme tiers indépendant du fabricant ou de ses filiales, sans lien direct avec une entreprise du secteur concerné (sauf si son indépendance et l’absence de conflit d’intérêts sont démontrées) [cra:art_39:par_3]. Il doit soumettre une demande de notification à l’autorité notifiante de l’État membre où il est établi, accompagnée d’une description détaillée de ses activités d’évaluation de la conformité, des procédures utilisées et des produits pour lesquels il évalue la conformité [cra:art_42:par_1 et 2]. Si le laboratoire n’a pas de certificat d’accréditation délivré par un organisme national d’accréditation, il doit fournir toutes les preuves documentaires nécessaires pour prouver qu’il répond aux exigences de l’article 39 [cra:art_42:par_3]. Le laboratoire doit s’assurer que ses sous-traitants ou filiales (s’il en sous-trait) répondent aux mêmes exigences et les informer de
 
 Expected: cra:art_39 · cited: cra:art_39, cra:art_42 · given: cra:anx_VIII, cra:art_42, cra:art_39, cra:art_47, cra:art_41, cra:art_46
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 145 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 165 s
 
 ## q013 · multi · fr · TO CHECK
 
@@ -163,11 +163,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 145 s
 
 **Reference answer:** Oui. La Commission peut modifier l'annexe III par actes délégués : ajouter une catégorie dans chaque classe, déplacer une catégorie d'une classe à l'autre ou en retirer une (article 7, paragraphe 3). Ce pouvoir lui est conféré pour cinq ans à compter du 10 décembre 2024, puis prorogé tacitement pour des périodes identiques, sauf opposition du Parlement européen ou du Conseil au plus tard trois mois avant la fin de chaque période (article 61, paragraphe 2).
 
-**Model answer:** La Commission peut ajouter votre produit à la liste des produits importants comportant des éléments numériques dans l’**annexe III**, si celui-ci répond aux critères de cybersécurité ou de risque énoncés à l’**article 7, paragraphe 2** [cra:art_7]. Elle doit adopter un **acte délégué** pour modifier cette liste. La Commission doit tenir compte des fonctionnalités cybersécurité ou du niveau de risque de votre produit. Un délai transitoire d’au moins **12 mois** peut être prévu si votre produit est déplacé de la classe I à la classe II ou ajouté à cette dernière, avant l’application des procédures d’évaluation de conformité (article 32, paragraphes 2 et 3) [cra:art_7]. La Commission doit adopter cet acte d’exécution **au plus tard le 11 décembre 2025** pour les catégories des classes I et II [cra:art_7].
+**Model answer:** La Commission peut ajouter votre produit à la liste des produits importants comportant des éléments numériques dans l’annexe III (classe I ou II) si celui-ci répond aux critères de cybersécurité ou de risque identifiés dans l’article 7, paragraphe 2 [cra:art_7]. Elle peut aussi déplacer une catégorie existante d’une classe à l’autre ou en retirer. La Commission doit adopter un acte délégué pour modifier l’annexe III au plus tard le 11 décembre 2025 [cra:art_7]. Si votre produit est ajouté ou déplacé dans les classes I ou II, une période transitoire d’au moins 12 mois peut s’appliquer avant l’application des procédures d’évaluation de conformité (article 32, paragraphe 2 et 3) [cra:art_7]. Les textes ne précisent pas de limite supérieure pour cette période transitoire, mais elle dépendra des raisons d’urgence ou des besoins du marché.
 
 Expected: cra:art_7, cra:art_61 · cited: cra:art_7 · given: cra:art_7, cra:art_57, cra:art_56, cra:art_14, cra:art_8, cra:art_35
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 134 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 138 s
 
 ## q014 · multi · fr · OK
 
@@ -175,11 +175,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes, key_figures N
 
 **Reference answer:** Oui : les cartes à puce et dispositifs similaires, y compris les éléments sécurisés, figurent à l'annexe IV. La Commission peut exiger par acte délégué un certificat européen de cybersécurité au niveau d'assurance « substantiel » au minimum (article 8, paragraphe 1). Tant qu'aucun acte délégué n'est adopté, ils suivent les procédures de l'article 32, paragraphe 3 : module B suivi du module C, module H, ou un schéma européen de certification. L'auto-évaluation (module A) n'est pas possible.
 
-**Model answer:** Les cartes à puce sécurisées figurant à l’[annexe IV:cra:anx_IV] sont considérées comme des **produits critiques** selon le CRA. Pour la conformité, cela implique : - **Certificat de cybersécurité européen** au minimum au niveau « substantiel » si un schéma européen de certification est adopté (article [cra:art_8:1]). - Si aucun acte délégué n’est adopté, les fabricants doivent utiliser les **procédures d’évaluation de conformité prévues à l’[article 32:cra:art_32:3 et 4]** (par exemple, un schéma européen de certification ou une évaluation sur la base de l’assurance qualité complète). Les exigences essentielles de cybersécurité (comme le partage des vulnérabilités et les mises à jour sécurisées) s’appliquent aussi (article [annexe I:cra:anx_I]).
+**Model answer:** Oui, les cartes à puce sécurisées sont des produits critiques selon l’annexe IV du CRA [cra:anx_IV]. Cela implique qu’elles doivent démontrer leur conformité aux exigences essentielles de cybersécurité via : - un schéma européen de certification de cybersécurité (si applicable) [cra:art_8, paragraphe 1], - ou une procédure alternative (comme celle prévue à l’article 32, paragraphe 3) si le schéma n’existe pas ou ne répond pas aux critères. Aucune date ou niveau d’assurance spécifique n’est précisé dans les sources fournies, mais elles doivent respecter les exigences de l’annexe I, notamment : - Partage des vulnérabilités via une adresse de contact [cra:anx_I, point 6], - Mises à jour sécurisées (automatisées si possible) [cra:anx_I, point 7]. Si un schéma européen de certification existe, la conformité passe par un certificat au niveau "substantiel" [cra:art_8]. Sinon, une évaluation interne ou un audit est obligatoire.
 
-Expected: cra:anx_IV, cra:art_8, cra:art_32 · cited: cra:anx_IV, cra:art_8, cra:art_32, cra:anx_I · given: cra:anx_IV, cra:art_12, cra:art_32, cra:anx_I, cra:art_8
+Expected: cra:anx_IV, cra:art_8, cra:art_32 · cited: cra:anx_IV, cra:art_8, cra:anx_I, cra:art_32 · given: cra:anx_IV, cra:art_12, cra:art_32, cra:anx_I, cra:art_8
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 129 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 148 s
 
 ## q015 · lookup · fr · OK
 
@@ -187,23 +187,23 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 129 s
 
 **Reference answer:** L'identification unique du produit (nom, type) ; le nom et l'adresse du fabricant ou de son mandataire ; la mention qu'elle est établie sous la seule responsabilité du fabricant ; l'objet de la déclaration, permettant la traçabilité ; la conformité à la législation d'harmonisation de l'Union ; les normes harmonisées, spécifications communes ou certifications appliquées ; le cas échéant, le nom et le numéro de l'organisme notifié, la procédure suivie et la référence du certificat ; la date, le lieu, le nom, la fonction et la signature du signataire.
 
-**Model answer:** La déclaration UE de conformité doit contenir les éléments suivants selon l’article 28 et l’annexe V : 1. **Nom et type du produit**, avec toute information permettant son identification unique. 2. **Nom et adresse du fabricant ou de son mandataire**. 3. Une **attestation** certifiant que la déclaration est établie sous la seule responsabilité du fournisseur. 4. **Objet précis** de la déclaration (identification du produit, traçabilité, éventuellement une photo). 5. Une **mention** confirmant que le produit décrit est conforme à la législation d’harmonisation de l’UE. 6. Les **références** de normes harmonisées ou certifications de cybersécurité appliquées. 7. **Cas échéant**, le nom et numéro de l’organisme notifié, la **procédure d’évaluation de conformité** suivie et la référence du certificat délivré. Pour la **déclaration simplifiée** (annexe VI), elle doit mentionner : *« [Nom du fabricant] déclare que le produit comportant des éléments numériques de type [désignation] est conforme au règlement (UE) 2024/2847. »*, avec un lien vers le texte complet disponible en ligne. La déclaration doit être **mise à jour en cas de besoin** et disponible dans les langues requises par l’État membre concerné.
+**Model answer:** La déclaration UE de conformité doit contenir les éléments suivants : 1. Nom et type du produit, ainsi que toute information supplémentaire permettant son identification unique [cra:anx_V, point 1]. 2. Nom et adresse du fabricant ou de son mandataire [cra:anx_V, point 2]. 3. Attestation certifiant que la déclaration est établie sous la responsabilité exclusive du fournisseur [cra:anx_V, point 3]. 4. Objet de la déclaration (identification précise du produit, traçabilité, éventuellement une photographie) [cra:anx_V, point 4]. 5. Mention confirmant que le produit décrit est conforme à la législation d’harmonisation de l’Union applicable [cra:anx_V, point 5]. 6. Références des normes harmonisées ou certifications de cybersécurité utilisées [cra:anx_V, point 6]. 7. Cas échéant, nom et numéro de l’organisme notifié, description de la procédure d’évaluation de conformité et référence du certificat délivré [cra:anx_V, point 7]. Pour une déclaration UE de conformité simplifiée, elle doit indiquer : - Le nom du fabricant et le type du produit [cra:anx_VI]. - Une déclaration concise selon
 
-Expected: cra:anx_V · cited: cra:art_28, cra:anx_V, cra:anx_VI · given: cra:art_28, cra:anx_V, cra:anx_VI, cra:anx_VIII, cra:art_13
+Expected: cra:anx_V · cited: cra:anx_V, cra:anx_VI · given: cra:art_28, cra:anx_V, cra:anx_VI, cra:anx_VIII, cra:art_13
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 10956 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 154 s
 
-## q016 · multi · fr · TO CHECK
+## q016 · multi · fr · OK
 
 **Question:** Peut-on mettre une version courte de la déclaration de conformité dans le carton plutôt que le document complet ?
 
 **Reference answer:** Oui. Le fabricant fournit avec le produit soit une copie de la déclaration UE de conformité, soit une déclaration simplifiée (article 13, paragraphe 20). La version simplifiée suit le modèle de l'annexe VI : le fabricant déclare que le produit de type … est conforme au règlement (UE) 2024/2847, et elle doit indiquer l'adresse internet exacte où le texte complet est disponible.
 
-**Model answer:** Non, les textes fournis ne permettent pas de répondre à cette question.
+**Model answer:** Oui, selon le texte du Cyber Resilience Act, le fabricant peut joindre une déclaration UE de conformité simplifiée (version courte) au produit, à condition qu’elle contienne l’adresse internet exacte où le texte complet est accessible [cra:art_13:20]. La déclaration simplifiée doit être établie selon le modèle de l’annexe VI et doit mentionner explicitement que le document complet est disponible en ligne [cra:anx_VI]. Cependant, la déclaration UE de conformité complète (article 28) doit être conservée et mise à disposition des autorités pendant dix ans [cra:anx_VIII:4.2]. Aucune source ne précise que le carton doit contenir le document complet, mais la déclaration simplifiée doit obligatoirement lier vers le texte complet.
 
-Expected: cra:art_13, cra:anx_VI · cited: none · given: cra:art_13, cra:anx_VI, cra:art_58, cra:art_28, cra:anx_VIII, cra:art_31
+Expected: cra:art_13, cra:anx_VI · cited: cra:art_13, cra:anx_VI, cra:anx_VIII, cra:art_28 · given: cra:art_13, cra:anx_VI, cra:art_58, cra:art_28, cra:anx_VIII, cra:art_31
 
-Checks: supported_citations yes, answered NO, cites_expected NO · 77 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 122 s
 
 ## q017 · lookup · en · OK
 
@@ -211,47 +211,47 @@ Checks: supported_citations yes, answered NO, cites_expected NO · 77 s
 
 **Reference answer:** At least: a general description of the product (intended purpose, software versions, photos of hardware, user instructions); a description of design, development, production and vulnerability handling, including the software bill of materials, the coordinated vulnerability disclosure policy and how updates are distributed securely; the cybersecurity risk assessment; the information used to set the support period; the harmonised standards, common specifications or certification schemes applied, or the solutions adopted instead; test reports; a copy of the EU declaration of conformity; and the software bill of materials on reasoned request of a market surveillance authority.
 
-**Model answer:** La documentation technique doit inclure : - Une **description détaillée** des processus de conception, développement et production du produit avec éléments numériques, incluant les **procédures de gestion des vulnérabilités** (comme le *software bill of materials*, la politique de divulgation coordonnée, un contact pour signaler les vulnérabilités et les solutions techniques pour la distribution sécurisée des mises à jour) [cra:anx_VII:2.b]. - Une **évaluation des risques cyber** (comment les exigences essentielles en matière de cybersécurité de l’Annexe I sont appliquées) [cra:anx_VII:3]. - Les **preuves de conformité** (tests, solutions techniques, justifications si certaines exigences ne s’appliquent pas) [cra:art_31.2, cra:anx_VIII:3.4]. - Les **éléments d’Annexe VII** (conformément à cra:anx_VII). Pour les PME, une version simplifiée peut être utilisée si adoptée par la Commission via un acte d’exécution [cra:art_33.5].
+**Model answer:** The technical documentation file must include: - All relevant data on the manufacturer’s cybersecurity measures and processes to meet essential requirements in Annex I, including those in Annex VII [cra:art_31]. - A cybersecurity risk assessment before placing the product on the market, justifying non-applicability of certain requirements if needed [cra:art_13:4]. - A description of the product’s design, development, and production, including vulnerability handling processes like the software bill of materials, disclosure policies, and update distribution methods [cra:anx_VII:2(b)]. - Evidence of vulnerability handling processes, such as a coordinated disclosure policy and contact details for reporting vulnerabilities [cra:anx_VII:2(b)]. - Details on production and monitoring processes, including validation of these processes [cra:anx_VII:2(c)]. - An assessment of cybersecurity risks and how essential requirements from Annex I apply [cra:anx_VII:3]. - Information used to determine the support period [cra:anx_VII:4]. The file must be updated during the support period and kept for at least 10 years after market placement or the support period, whichever is longer [cra:art_13:13].
 
-Expected: cra:anx_VII · cited: cra:anx_VII, cra:art_31, cra:anx_VIII, cra:art_33 · given: cra:art_31, cra:anx_VIII, cra:art_33, cra:art_13, cra:anx_VII
+Expected: cra:anx_VII · cited: cra:art_31, cra:art_13, cra:anx_VII · given: cra:art_31, cra:anx_VIII, cra:art_33, cra:art_13, cra:anx_VII
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 33022 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 134 s
 
-## q018 · lookup · fr · TO CHECK
+## q018 · lookup · fr · OK
 
 **Question:** Quelle est la différence entre le module A et le module H pour évaluer la conformité ?
 
 **Reference answer:** Module A (contrôle interne) : le fabricant établit la documentation technique et déclare sous sa seule responsabilité que le produit respecte les exigences essentielles, sans organisme notifié. Module H (assurance complète de la qualité) : le fabricant applique un système de qualité, couvrant la conception, le développement, les essais et la gestion des vulnérabilités, approuvé par un organisme notifié de son choix, qui le surveille ensuite pendant toute la période d'assistance.
 
-**Model answer:** Le **module A** (contrôle interne) repose sur la **responsabilité exclusive du fabricant**, qui doit prouver par lui-même que ses produits et ses processus respectent les exigences essentielles de cybersécurité (création de la documentation technique à l’[annex_VIII:point_3]). Il s’agit d’une auto-évaluation avec un organisme notifié qui vérifie la conformité et appose le marquage CE après validation. Le **module H** (assurance complète de la qualité) exige une **évaluation externe approfondie** par un organisme notifié, qui certifie que le fabricant a mis en place des processus rigoureux (comme les normes harmonisées ou des schémas de certification) pour garantir la sécurité des produits. Ce module est obligatoire pour les produits de classe II [cra:art_32, point 3b]. Le module A est plus léger, tandis que le module H impose une certification stricte.
+**Model answer:** Le module A (contrôle interne) repose sur la responsabilité directe du fabricant pour démontrer la conformité via la documentation technique (annexe VII) et la gestion interne des exigences essentielles [cra:anx_VIII]. Il ne fait pas appel à un organisme notifié pour vérifier les aspects techniques, sauf si le fabricant en délègue certaines obligations [cra:anx_VIII, pt 4]. Le module H (assurance complète de la qualité) exige une évaluation externe par un organisme notifié pour certifier la conformité, sans distinction entre les tâches internes et externes [cra:anx_VIII, pt IV]. Il implique une vérification approfondie, adaptée à la complexité du produit, et garantit une traçabilité stricte des processus [cra:art_39]. Le module A est donc autonome et moins formel, tandis que le module H impose une certification par un tiers.
 
-Expected: cra:anx_VIII · cited: cra:art_32 · given: cra:art_32, cra:anx_VIII, cra:art_39, cra:art_58, cra:art_35
+Expected: cra:anx_VIII · cited: cra:anx_VIII, cra:art_39 · given: cra:art_32, cra:anx_VIII, cra:art_39, cra:art_58, cra:art_35
 
-Checks: supported_citations yes, answered yes, cites_expected NO · 142 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 139 s
 
-## q019 · lookup · fr · OK
+## q019 · lookup · fr · TO CHECK
 
 **Question:** Nous fabriquons un dispositif médical connecté. Est-ce qu'il est concerné par le CRA ?
 
 **Reference answer:** Non : le CRA ne s'applique pas aux produits relevant du règlement (UE) 2017/745 (dispositifs médicaux) ni du règlement (UE) 2017/746 (dispositifs médicaux de diagnostic in vitro), comme le prévoit l'article 2, paragraphe 2. Ces produits restent soumis à leur propre réglementation.
 
-**Model answer:** Le CRA ne s’applique pas directement aux dispositifs médicaux connectés **si** ils relèvent déjà d’autres règles de l’Union qui couvrent tout ou partie des risques de cybersécurité essentiels du CRA, **à condition** que ces règles sectorielles assurent un niveau de protection **identique ou supérieur** à celui du CRA [cra:art_2]. Pour vérifier si votre dispositif médical connecté est concerné, il faut consulter les règles sectorielles applicables (comme la directive **2017/745** sur les dispositifs médicaux ou **2017/746** sur les dispositifs médicaux de diagnostic in vitro), et confirmer qu’elles couvrent les exigences essentielles de cybersécurité du CRA. Si elles le font, le CRA peut être **limité ou exclu** pour ce produit.
+**Model answer:** Les textes fournis ne permettent pas de répondre à cette question.
 
-Expected: cra:art_2 · cited: cra:art_2 · given: red-da:art_1, cra:art_17, cra:art_2, cra:art_57, cra:art_4, cra:art_59, cra:anx_III
+Expected: cra:art_2 · cited: none · given: red-da:art_1, cra:art_17, cra:art_2, cra:art_57, cra:art_4, cra:art_59, cra:anx_III
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 152 s
+Checks: supported_citations yes, answered NO, cites_expected NO · 96 s
 
-## q020 · lookup · en · TO CHECK
+## q020 · lookup · en · OK
 
 **Question:** We import connected cameras made outside the EU. What do we have to check before we start selling them?
 
 **Reference answer:** Importers may only place on the market products that meet the essential requirements of Annex I. Before placing a product on the market they must ensure that the manufacturer carried out the appropriate conformity assessment (Article 32), that the technical documentation has been drawn up, that the product bears the CE marking and comes with the EU declaration of conformity and the user information of Annex II in an easily understood language, and that the manufacturer complied with Article 13(15), (16) and (19).
 
-**Model answer:** Vous devez vérifier que les caméras connectées que vous importez respectent les obligations suivantes avant leur mise sur le marché : Les caméras connectées sont classées comme **produits à éléments numériques** (cibles du CRA). Selon l’[cra:anx_III] (Annexe III), les **smart home products avec sécurité fonctionnalités**, y compris les caméras de surveillance, sont considérées comme des produits critiques. Elles doivent donc respecter les exigences cyber-sécurité du CRA. Avant la mise sur le marché, vous devez : - **Vérifier que le fabricant a** : - Conformé aux exigences essentielles du CRA (Part I et II de l’Annexe I). - Réalisé les procédures de conformité conformément à l’[cra:art_32]. - Établis la **déclaration de conformité européenne** (UE DoC) et affiché le **CE** (selon l’[cra:art_13] et [cra:art_30]). - Inclure la documentation technique et les instructions utilisateur en français (ou une langue compréhensible par les autorités et les utilisateurs). - **Assurer que le produit porte le CE** et que les documents requis (UE DoC, instructions) sont fournis par le fabricant (selon l
+**Model answer:** Before selling connected cameras, you must verify the following from the provided sources: 1. The manufacturer must have ensured compliance with the essential cybersecurity requirements in Part I of Annex I and the processes in Part II of Annex I of the CRA [cra:art_19]. 2. The product must bear the CE marking, include an EU declaration of conformity (Article 13(20)), and provide user instructions in an understandable language [cra:art_19(d)]. 3. The technical documentation must be drawn up by the manufacturer [cra:art_19(b)]. 4. The cameras fall under Annex III Class I (smart home products with security functionalities), so they are within the scope of the CRA [cra:anx_III(17)]. You must also confirm that the manufacturer has followed the appropriate conformity assessment procedures (Article 32) and that the importer has no reason to believe the product or processes are non-compliant [cra:art_19(2)]. If the cameras present a significant cybersecurity risk, you must inform the manufacturer and market surveillance authorities [cra:art_19(3)].
 
-Expected: cra:art_19 · cited: cra:anx_III, cra:art_32, cra:art_13, cra:art_30 · given: cra:art_19, cra:anx_III, cra:art_13, cra:art_20, cra:art_69, cra:art_8
+Expected: cra:art_19 · cited: cra:art_19, cra:anx_III, cra:art_13 · given: cra:art_19, cra:anx_III, cra:art_13, cra:art_20, cra:art_69, cra:art_8
 
-Checks: supported_citations NO, answered yes, cites_expected NO · 151 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 144 s
 
 ## q021 · lookup · fr · TO CHECK
 
@@ -259,11 +259,11 @@ Checks: supported_citations NO, answered yes, cites_expected NO · 151 s
 
 **Reference answer:** Vous êtes considérés comme fabricant. Un importateur ou un distributeur qui met un produit sur le marché sous son propre nom ou sa propre marque est soumis aux articles 13 et 14 (obligations des fabricants et signalement). Il en va de même s'il apporte une modification substantielle à un produit déjà mis sur le marché (article 21).
 
-**Model answer:** Vous êtes considéré comme un **importateur** et **distributeur** sous le CRA, mais les obligations principales reviennent au fabricant asiatique pour la conformité technique. Cependant, en tant qu’**importateur**, vous devez : - **Indiquer votre nom, raison sociale ou marque déposée** (adresses postale, électronique et site web si applicable) sur le produit, l’emballage ou un document l’accompagnant [cra:art_19]. - **Vérifier** que le produit respecte les exigences du CRA avant mise sur le marché et agir si non-conformité (retrait ou rappel si nécessaire) [cra:art_19]. En tant que **distributeur**, vous n’avez pas d’obligation supplémentaire de documentation ou de support technique, sauf si vous modifiez substantiellement le produit [cra:art_22]. Les informations utilisateur et le point de contact unique restent au fabricant.
+**Model answer:** Vous êtes considéré comme un importateur et distributeur du produit sous votre propre marque, donc vos obligations dépendent des articles pertinents du CRA. Vos principales obligations sont : - Indiquer vos coordonnées (nom, adresse postale, électronique, site web si applicable) sur le produit, son emballage ou un document l’accompagnant, en langue compréhensible [cra:art_19, paragraphe 4]. - Respecter les informations utilisateur (annexe II) pour l’utilisation sécurisée du produit, à conserver pendant au moins 10 ans ou la période d’assistance la plus longue [cra:art_13, paragraphe 18]. - Vérifier la conformité du produit : si vous suspectez un non-respect du CRA, vous devez corriger, retirer ou rappeler le produit immédiatement [cra:art_19, paragraphe 5]. Exception : si vous ne modifiez pas le produit et ne le commercialisez pas sous votre propre nom, ces obligations ne s’appliquent pas strictement. Cependant, comme vous le vendez sous votre marque, l’importateur doit respecter les obligations de communication et de conformité. *Manquant dans les sources : aucune mention des obligations spécifiques pour les distributeurs autres que celles déjà cité
 
-Expected: cra:art_21 · cited: cra:art_19, cra:art_22 · given: cra:art_21, cra:art_13, cra:art_3, cra:art_19, cra:anx_VIII, cra:art_22
+Expected: cra:art_21 · cited: cra:art_19, cra:art_13 · given: cra:art_21, cra:art_13, cra:art_3, cra:art_19, cra:anx_VIII, cra:art_22
 
-Checks: supported_citations yes, answered yes, cites_expected NO · 132 s
+Checks: supported_citations yes, answered yes, cites_expected NO · 151 s
 
 ## q022 · lookup · fr · TO CHECK
 
@@ -271,11 +271,11 @@ Checks: supported_citations yes, answered yes, cites_expected NO · 132 s
 
 **Reference answer:** Oui, en tant que solution de traitement de données à distance : le « produit comportant des éléments numériques » inclut ses solutions de traitement de données à distance (article 3, point 1). Il s'agit de tout traitement à distance conçu et développé par le fabricant ou sous sa responsabilité, et dont l'absence empêcherait le produit d'exécuter une de ses fonctions (article 3, point 2).
 
-**Model answer:** Le **Cyber Resilience Act (CRA)** ne couvre directement **un objet connecté dépendant d’un serveur cloud développé par le fabricant**, sauf si ce backend remplit des critères spécifiques liés aux **produits critiques** ou **importants** définis dans le texte. D’après les sources, le CRA s’applique aux **produits comportant des éléments numériques** (comme votre objet connecté) **uniquement si** : - Ils sont **classés comme "produits importants"** (Annexe III, ex. : assistants virtuels, jouets connectés, produits de santé portables) **ou** "produits critiques" (Annexe IV, ex. : hyperviseurs, pare-feu). - Votre objet connecté doit alors **obtenir un certificat de cybersécurité européen** (Art. 8) ou suivre une évaluation de conformité spécifique (Art. 32). **Votre backend cloud n’est pas automatiquement concerné** : il dépend de la **catégorie de votre objet connecté** (ex. : jouet connecté, appareil médical). Si ce dernier est **exclu du CRA** (ex. : jouet couvert par la directive 2009/48/CE), le CRA ne s’applique pas non plus au backend. *Seules les règles sectorielles (ex. : directive 2014/53
+**Model answer:** Votre objet connecté n’est pas explicitement couvert par le CRA dans les sources fournies. Le CRA s’applique uniquement aux produits comportant des éléments numériques eux-mêmes, pas à leurs dépendances externes comme un serveur cloud développé par le fabricant. Les sources ne précisent pas si le CRA s’applique aux systèmes d’exécution ou infrastructures critiques (comme un backend) qui alimentent un produit connecté. Aucune mention n’est faite dans les articles ou annexes du CRA ou du RED-DA concernant les composants logiciels internes ou externes non intégrés dans le produit final. Pour le RED-DA, le texte s’applique uniquement aux équipements radioélectriques connectés à l’internet (comme un objet connecté) et non aux serveurs cloud indépendants [red-da:art_1]. Aucune dérogation ou exclusion ne couvre explicitement les dépendances logicielles externes dans les sources données. Ce qui est clair : - Le CRA ne s’applique pas aux pièces de rechange (comme un serveur cloud) [cra:art_2]. - Le RED-DA ne couvre pas les serveurs cloud indépendants [red-da:art_1].
 
-Expected: cra:art_3 · cited: cra:art_8, cra:anx_III · given: red-da:art_1, cra:anx_III, cra:art_8, cra:art_12, cra:art_13, cra:art_2, cra:anx_I, cra:art_27
+Expected: cra:art_3 · cited: red-da:art_1, cra:art_2 · given: red-da:art_1, cra:anx_III, cra:art_8, cra:art_12, cra:art_13, cra:art_2, cra:anx_I, cra:art_27
 
-Checks: supported_citations yes, answered yes, cites_expected NO · 183 s
+Checks: supported_citations yes, answered yes, cites_expected NO · 153 s
 
 ## q023 · lookup · fr · TO CHECK
 
@@ -283,23 +283,23 @@ Checks: supported_citations yes, answered yes, cites_expected NO · 183 s
 
 **Reference answer:** Non : les correctifs et mises à jour de sécurité doivent être diffusés sans retard et gratuitement, accompagnés de messages consultatifs qui indiquent aux utilisateurs les mesures à prendre (annexe I, partie II, point 8). Seule exception : un accord contraire avec un utilisateur professionnel pour un produit sur mesure.
 
-**Model answer:** Les textes fournis ne permettent pas de répondre à cette question.
+**Model answer:** Non, les mises à jour de sécurité ne peuvent pas être payantes pour les clients finaux selon les sources fournies. L’article 13, point 8, précise que les fabricants doivent diffuser ces correctifs sans retard et gratuitement, sauf accord contraire entre un fabricant et un utilisateur professionnel pour un produit sur mesure. Cela exclut les clients finaux, sauf si le produit est spécifiquement conçu pour eux (ex. : solutions personnalisées).
 
-Expected: cra:anx_I · cited: none · given: cra:anx_I, cra:anx_II, cra:art_13, cra:art_3, cra:art_6
+Expected: cra:anx_I · cited: cra:art_13 · given: cra:anx_I, cra:anx_II, cra:art_13, cra:art_3, cra:art_6
 
-Checks: supported_citations yes, answered NO, cites_expected NO · 71 s
+Checks: supported_citations yes, answered yes, cites_expected NO · 94 s
 
-## q024 · lookup · en · TO CHECK
+## q024 · lookup · en · OK
 
 **Question:** Can we wait and ship our security fixes together with the next feature release?
 
 **Reference answer:** Not as a rule. Vulnerabilities must be addressed and remediated without delay, including by providing security updates, and where technically feasible new security updates must be provided separately from functionality updates (Annex I, Part II, point 2).
 
-**Model answer:** Les textes fournis ne permettent pas de répondre à cette question.
+**Model answer:** The provided texts do not explicitly forbid shipping security fixes with feature releases. However, the sources suggest strong requirements for timely security updates: - Security updates must be provided without delay ([cra:anx_I](cra:anx_I) point 2) and disseminated without delay ([cra:anx_I](cra:anx_I) point 8). - Updates should be separate from functionality updates where technically feasible ([cra:anx_I](cra:anx_I) point 2). - Manufacturers must ensure updates are free of charge unless agreed otherwise for tailor-made products ([cra:anx_I](cra:anx_I) point 8). The sources do not mention a specific deadline for separating fixes, but delaying security fixes risks non-compliance with the CRA’s urgency requirements. The notified body may verify adherence to these rules during conformity checks ([cra:anx_VIII](cra:anx_VIII) points 4.5, 6).
 
-Expected: cra:anx_I · cited: none · given: cra:anx_I, cra:anx_II, cra:anx_VIII, cra:art_14, cra:art_16
+Expected: cra:anx_I · cited: cra:anx_I, cra:anx_VIII · given: cra:anx_I, cra:anx_II, cra:anx_VIII, cra:art_14, cra:art_16
 
-Checks: supported_citations yes, answered NO, cites_expected NO · 66 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 122 s
 
 ## q025 · lookup · fr · OK
 
@@ -307,11 +307,11 @@ Checks: supported_citations yes, answered NO, cites_expected NO · 66 s
 
 **Reference answer:** Signaler la vulnérabilité à la personne ou à l'entité qui maintient le composant, la traiter et y remédier selon les exigences de l'annexe I, partie II, et, si vous avez développé un correctif, partager le code ou la documentation correspondants avec le mainteneur, dans un format lisible par machine s'il y a lieu (article 13, paragraphe 6).
 
-**Model answer:** D’après les textes fournis, voici les obligations à respecter : 1. **Signalement** : Le fabricant doit informer la personne ou l’entité qui assure la maintenance de la bibliothèque open source concernée, en précisant la vulnérabilité identifiée [cra:art_13, paragraphe 6]. 2. **Correction** : Il faut corriger la faille selon les exigences de gestion des vulnérabilités détaillées dans l’**annexe I, partie II** (points spécifiques non explicitement cités ici, mais à appliquer selon les procédures définies). 3. **Partage du code** : Si une modification logicielle ou matérielle est nécessaire pour remédier à la vulnérabilité, le fabricant doit partager le code ou la documentation correspondante avec le mainteneur de la bibliothèque, sous un format lisible par machine si applicable [cra:art_13, paragraphe 6]. 4. **Coordonner la divulgation** : Utiliser les politiques de divulgation coordonnée de vulnérabilités (annexe I, partie II, point 5) pour traiter cette faille, qu’elle provienne de sources internes ou externes. *Les détails précis des procédures de correction et de partage ne sont pas explicitement détaillés dans les sources fournies.*
+**Model answer:** Vous devez signaler la vulnérabilité à la personne ou à l’entité qui assure la maintenance du composant concerné, conformément aux exigences de l’annexe I, partie II [cra:anx_I]. Ensuite, vous devez appliquer les mesures correctives prévues pour cette faille, comme indiqué dans cette même partie II [cra:anx_I]. Si vous avez développé une modification logicielle ou matérielle pour corriger cette vulnérabilité, partagez le code ou la documentation correspondante avec la personne ou l’entité qui fabrique ou maintient ce composant, dans un format lisible par machine si nécessaire [cra:art_13, paragraphe 6]. Vous devez aussi mettre en place des politiques de divulgation coordonnée des vulnérabilités, comme celles définies à l’annexe I, partie II, point 5) [cra:anx_I], pour traiter toute vulnérabilité signalée, qu’elle provienne de sources internes ou externes. Le reste de la période d’assistance pour les mises à jour de sécurité doit rester disponible pendant au moins dix ans après leur émission [cra:art_13, paragraphe 9].
 
-Expected: cra:art_13 · cited: cra:art_13, cra:anx_I · given: cra:art_13, cra:anx_I, cra:art_3, cra:art_4, cra:art_25
+Expected: cra:art_13 · cited: cra:anx_I, cra:art_13 · given: cra:art_13, cra:anx_I, cra:art_3, cra:art_4, cra:art_25
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 159 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 149 s
 
 ## q026 · lookup · fr · OK
 
@@ -319,23 +319,23 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 159 s
 
 **Reference answer:** Oui : la date de fin de la période d'assistance, avec au moins le mois et l'année, doit être précisée au moment de l'achat, de manière claire, compréhensible et facilement accessible, et le cas échéant sur le produit, son emballage ou par des moyens numériques (article 13, paragraphe 19).
 
-**Model answer:** Les fabricants doivent indiquer dans les instructions destinées à l’utilisateur la durée pendant laquelle les mises à jour de sécurité seront disponibles, conformément à l’article 13, point 9 [cra:art_13]. Ils doivent préciser que ces mises à jour restent disponibles au moins pendant **dix ans après leur mise à disposition** ou jusqu’à la fin de la période d’assistance du produit, en respectant la durée la plus longue des deux. Cette information doit être clairement mentionnée dans les instructions techniques ou via un lien vers des informations détaillées.
+**Model answer:** Oui, selon le Cyber Resilience Act, les fabricants doivent indiquer à l’acheteur la durée pendant laquelle le produit recevra des mises à jour de sécurité. L’article 13 précise que ces mises à jour restent disponibles au moins pendant dix ans après leur mise à disposition, ou jusqu’à la fin de la période d’assistance du produit, en prenant la durée la plus longue [cra:art_13].
 
 Expected: cra:art_13 · cited: cra:art_13 · given: cra:anx_I, cra:anx_II, cra:art_13, cra:art_14, cra:anx_VIII
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 106 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 99 s
 
-## q027 · lookup · en · OK
+## q027 · lookup · en · TO CHECK
 
 **Question:** What fine do we risk if we give incomplete or misleading information to a market surveillance authority?
 
 **Reference answer:** Up to EUR 5 000 000 or, for an undertaking, up to 1 % of its total worldwide annual turnover for the preceding financial year, whichever is higher (Article 64(4)). It covers incorrect, incomplete or misleading information supplied to notified bodies and market surveillance authorities in reply to a request.
 
-**Model answer:** Selon l’article 64(4) du CRA, une entreprise qui fournit des informations erronées, incomplètes ou trompeuses aux autorités de surveillance du marché en réponse à une demande est passible d’une amende administrative allant jusqu’à **5 millions d’euros**, ou **1 % de son chiffre d’affaires mondial de l’exercice précédent**, selon le montant le plus élevé [cra:art_64].
+**Model answer:** The fine for supplying incorrect, incomplete, or misleading information to notified bodies or market surveillance authorities is up to EUR 5,000,000 or 1% of the offender’s total worldwide annual turnover for the preceding financial year, whichever is higher [cra:art_64:4]. No other specific details (such as deadlines or exceptions) are provided in the sources.
 
 Expected: cra:art_64 · cited: cra:art_64 · given: cra:art_64, cra:art_52, cra:art_20, cra:art_54, cra:art_59, cra:art_63
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures yes · 84 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 81 s
 
 ## q028 · lookup · fr · OK
 
@@ -343,23 +343,23 @@ Checks: supported_citations yes, answered yes, cites_expected yes, key_figures y
 
 **Reference answer:** Oui, sous conditions. Lors d'un salon, d'une exposition ou d'une démonstration, un produit non conforme, y compris un prototype, peut être présenté s'il porte une marque visible indiquant qu'il n'est pas conforme et ne sera pas mis à disposition tant qu'il ne l'est pas. Un logiciel inachevé non conforme peut être mis à disposition pour une durée limitée nécessaire aux essais, avec une marque visible indiquant qu'il n'est pas conforme et ne sert qu'aux essais (article 4, paragraphes 2 et 3).
 
-**Model answer:** Non, selon le **Cyber Resilience Act (CRA)**, les prototypes non conformes et les versions bêta de logiciels ne peuvent pas être présentés sur des salons commerciaux ou mis à disposition sur le marché. D’après **[cra:art_4]** : - Les États membres interdisent la présentation d’un produit non conforme (y compris un prototype) lors d’événements comme des salons, sauf si le produit porte une **marque visible** indiquant clairement qu’il n’est pas conforme et qu’il ne sera pas mis sur le marché tant qu’il ne sera pas conforme. - Les logiciels inachevés ou en version bêta non conformes ne peuvent être mis à disposition que **pour une durée limitée nécessaire à des essais**, avec la même marque d’inconformité. Aucune exception ne permet de diffuser une version bêta sans cette marque ou sans restriction temporaire.
+**Model answer:** Oui, selon le CRA, il est possible de présenter un prototype ou une version bêta non conforme lors d’événements comme des salons, sous certaines conditions précises. Les fabricants peuvent exposer des produits comportant des éléments numériques non conformes (comme des prototypes ou des versions bêta) lors de foires commerciales, expositions ou démonstrations, à condition : - qu’ils portent une marque visible indiquant clairement qu’ils ne sont pas conformes au règlement [cra:art_4, paragraphe 2]. - qu’ils ne soient pas mis à disposition sur le marché tant qu’ils ne seront pas conformes [cra:art_4, paragraphe 2]. Pour les logiciels inachevés, la règle s’applique aussi si leur mise à disposition est limitée à des essais et qu’ils portent une marque similaire indiquant qu’ils ne sont pas conformes [cra:art_4, paragraphe 3]. Aucune durée ou limite spécifique n’est précisée dans les sources fournies pour ces cas, mais les produits doivent rester exclus du marché tant qu’ils ne sont pas conformes.
 
 Expected: cra:art_4 · cited: cra:art_4 · given: cra:art_13, cra:art_4, cra:art_16, cra:art_25, cra:art_3, cra:anx_I
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 129 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 142 s
 
-## q029 · lookup · fr · TO CHECK
+## q029 · lookup · fr · OK
 
 **Question:** Nos équipements sont développés uniquement pour les forces armées. Le CRA s'applique-t-il ?
 
 **Reference answer:** Non : le règlement ne s'applique pas aux produits développés ou modifiés exclusivement à des fins de sécurité nationale ou de défense, ni aux produits spécifiquement conçus pour traiter des informations classifiées (article 2, paragraphe 7).
 
-**Model answer:** Non, le **Cyber Resilience Act (CRA)** ne s’applique pas à vos équipements développés exclusivement pour les forces armées [cra:art_7].
+**Model answer:** Le CRA ne s’applique pas à vos équipements développés exclusivement pour les forces armées, conformément à l’article 8 du règlement [cra:art_2].
 
-Expected: cra:art_2 · cited: cra:art_7 · given: cra:art_2, red-da:art_1, red-da:art_2, cra:art_12
+Expected: cra:art_2 · cited: cra:art_2 · given: cra:art_2, red-da:art_1, red-da:art_2, cra:art_12
 
-Checks: supported_citations NO, answered yes, cites_expected NO · 94 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 95 s
 
 ## q030 · lookup · en · OK
 
@@ -367,23 +367,23 @@ Checks: supported_citations NO, answered yes, cites_expected NO · 94 s
 
 **Reference answer:** For software, the CE marking is affixed either to the EU declaration of conformity or on the website accompanying the software; in the latter case the relevant section of the website must be easily and directly accessible to consumers (Article 30(1)). It must be affixed before the product is placed on the market (Article 30(3)), followed by the notified body's identification number when module H is used (Article 30(4)).
 
-**Model answer:** Pour les produits logiciels purs, selon le texte fourni, le marquage **CE** doit être affiché sur : - **l’****EU déclaration de conformité** (Article 30[1]) ou - **le site web accompagnant le logiciel** (Article 30[1]), dans une section facilement accessible aux consommateurs. La CE doit être indiquée avant la mise sur le marché (Article 30[3]). Aucune autre règle spécifique ne précise un emplacement physique pour les logiciels.
+**Model answer:** For pure software products, the CE marking must be affixed either to the EU declaration of conformity accompanying the product (as per [cra:art_30]) or on the website linked to the software, in a clearly accessible section for consumers [cra:art_30]. The declaration must be provided with the product or made available online. No physical label is required.
 
 Expected: cra:art_30 · cited: cra:art_30 · given: cra:art_30, cra:art_58, cra:art_29, cra:art_4, cra:anx_VIII
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 89 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 83 s
 
-## q031 · lookup · fr · TO CHECK
+## q031 · lookup · fr · OK
 
 **Question:** Une faille qui n'est pas exploitée, ou un incident évité de justesse : peut-on quand même les signaler ?
 
 **Reference answer:** Oui, de manière volontaire. Les fabricants, comme toute autre personne physique ou morale, peuvent notifier à un CSIRT désigné comme coordinateur ou à l'ENISA toute vulnérabilité, les cybermenaces susceptibles d'affecter le profil de risque d'un produit, tout incident ayant des répercussions sur sa sécurité, ainsi que les incidents évités qui auraient pu en provoquer un (article 15, paragraphes 1 et 2).
 
-**Model answer:** Oui, selon le **Cyber Resilience Act (CRA)**, les fabricants et toute personne physique ou morale peuvent signaler **volontairement** : - une **vulnérabilité non exploitée** dans un produit avec éléments numériques, - ou un **incident évité** ayant pu entraîner une menace grave sur la sécurité du produit. Ces notifications doivent être transmises au **CSIRT désigné comme coordinateur** ou à l’**ENISA** via la plateforme unique de signalement (article **15**). La confidentialité des informations est garantie, et ces signalements ne créent pas d’obligation supplémentaire pour la personne notifiant (article **15**, paragraphe 5).
+**Model answer:** Oui, selon le Cyber Resilience Act (CRA), les fabricants et toute personne physique ou morale peuvent signaler volontairement : - une vulnérabilité non exploitée dans un produit avec éléments numériques (citer les cybermenaces affectant son profil de risque) [cra:art_15, paragraphe 1]. - un incident évité ayant des répercussions sur la sécurité du produit [cra:art_15, paragraphe 2]. Ces notifications sont transmises au CSIRT ou à l’ENISA sans obligation de confidentialité supplémentaire pour la personne signalant [cra:art_15, paragraphe 5]. À noter : ces signalements volontaires ne sont pas obligatoires et ne créent pas d’obligations supplémentaires pour le signalant.
 
-Expected: cra:art_15 · cited: none · given: cra:art_15, cra:art_16, cra:art_14
+Expected: cra:art_15 · cited: cra:art_15 · given: cra:art_15, cra:art_16, cra:art_14
 
-Checks: supported_citations yes, answered yes, cites_expected NO · 103 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 111 s
 
 ## q032 · multi · fr · OK
 
@@ -391,11 +391,11 @@ Checks: supported_citations yes, answered yes, cites_expected NO · 103 s
 
 **Reference answer:** Oui, si c'est une modification substantielle : une modification apportée après la mise sur le marché qui a une incidence sur la conformité aux exigences essentielles de l'annexe I, partie I, ou qui modifie l'utilisation prévue pour laquelle le produit a été évalué (article 3, point 30). La personne qui apporte une telle modification et met le produit à disposition est considérée comme fabricant (article 22) : elle est soumise aux articles 13 et 14 pour la partie modifiée, ou pour tout le produit si la modification affecte sa cybersécurité dans son ensemble.
 
-**Model answer:** Selon les textes fournis, **oui**, l’intégrateur devient fabricant pour les obligations du CRA. Il doit respecter les articles **13** et **14** du CRA, car il apporte une **modification substantielle** (le firmware) à un produit numérique existant et le met à disposition sur le marché sous son propre nom ou sa propre marque [cra:art_22]. Cette modification impacte la cybersécurité globale du produit.
+**Model answer:** Oui, l’intégrateur devient fabricant pour cette caméra modifiée. Selon l’article 22 [cra:art_22], toute personne apportant une modification substantielle à un produit numérique existant et le mettant à disposition sur le marché est considérée comme un fabricant. Ici, la modification du firmware et la réutilisation commerciale de la caméra qualifient cette action comme une modification substantielle, donc les obligations du CRA s’appliquent.
 
 Expected: cra:art_3, cra:art_22 · cited: cra:art_22 · given: cra:art_13, cra:art_21, cra:art_22, cra:art_14, cra:anx_I
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 90 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 91 s
 
 ## q033 · multi · en · OK
 
@@ -403,11 +403,11 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 90 s
 
 **Reference answer:** If it qualifies as an open-source software steward, that is a legal person other than a manufacturer that systematically supports on a sustained basis the development of specific free and open-source products intended for commercial activities (Article 3(14)), it must put in place and document a cybersecurity policy, cooperate with market surveillance authorities and give them its documentation on reasoned request, and report actively exploited vulnerabilities under Article 14(1) to the extent it is involved in development (Article 24). Administrative fines do not apply to open-source software stewards (Article 64(10)).
 
-**Model answer:** La **CRA** impose des obligations sur cette fondation uniquement si elle remplit la définition d’**open-source software steward** (article 3:def_14). Selon les sources, elle doit alors : - Élaborer et documenter une **politique cybersecurity** (article 24:par_1), incluant la gestion des vulnérabilités (documentation, remédiation, partage d’informations). - Cooperer avec les autorités de surveillance (article 24:par_2). - Fournir, sur demande, la documentation à une autorité de marché en cas de non-conformité (article 24:par_3). - Respecter les obligations de conformité de l’article 14 (notamment la gestion des risques cyber) si elle participe au développement de produits avec éléments digitaux (article 24:par_3). Si elle ne remplit pas ces critères, **aucune obligation spécifique n’est imposée par la CRA**.
+**Model answer:** The provided texts do not explicitly define whether a non-profit foundation maintaining an open-source library falls under the definition of an "open-source software steward" as per the CRA. However, based on the sources, if the foundation meets the criteria of Article 3(14)—systematically providing support on a sustained basis for the development of specific products with digital elements qualifying as free and open-source software, intended for commercial activities—then it could be considered an open-source software steward. The foundation would then have obligations under Article 24 of the CRA, including: - Establishing and documenting a cybersecurity policy (including vulnerability handling). - Cooperating with market surveillance authorities upon request. - Providing relevant documentation to authorities upon request. The foundation is not explicitly required to report vulnerabilities to manufacturers unless it is directly involved in the development of those products, as per Article 13(6).
 
-Expected: cra:art_3, cra:art_24, cra:art_64 · cited: cra:art_3, cra:art_24 · given: cra:art_25, cra:art_24, cra:art_13, cra:art_52, cra:art_3, cra:art_32
+Expected: cra:art_3, cra:art_24, cra:art_64 · cited: cra:art_3, cra:art_24, cra:art_13 · given: cra:art_25, cra:art_24, cra:art_13, cra:art_52, cra:art_3, cra:art_32
 
-Checks: supported_citations yes, answered yes, cites_expected yes · 124 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 115 s
 
 ## q034 · multi · fr · TO CHECK
 
@@ -415,23 +415,23 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 124 s
 
 **Reference answer:** Oui. Les États membres mènent des actions de sensibilisation et de formation, ouvrent un canal de communication dédié, soutiennent les essais et l'évaluation de la conformité, et peuvent créer des sas réglementaires ; les micro et petites entreprises peuvent fournir la documentation technique dans un format simplifié (article 33). Les redevances d'évaluation de la conformité tiennent compte des besoins des PME et sont réduites en proportion (article 32, paragraphe 6). Les micro et petites entreprises ne reçoivent pas d'amende pour un dépassement du délai de 24 heures de l'alerte précoce (article 64, paragraphe 10).
 
-**Model answer:** Oui, le CRA prévoit des allègements pour les petites entreprises comme la vôtre. Voici les points clés : - **Documentation simplifiée** : Vous pouvez fournir une documentation technique simplifiée via un formulaire spécifique défini par la Commission, sans altérer les exigences de l’annexe VII [cra:art_33, paragraphe 5]. - **Réductions des redevances** : Les coûts pour les procédures d’évaluation de conformité sont adaptés en fonction de vos besoins spécifiques, réduits pour les micro- et petites entreprises [cra:art_32]. - **Assistance et sensibilisation** : La Commission et les États membres offrent des formations et un soutien financier via les programmes existants de l’UE pour alléger la charge [cra:art_33, paragraphe 4]. - **Accès facilité aux organismes notifiés** : Les organismes d’évaluation doivent appliquer des conditions justes et proportionnées, évitant une charge inutile [cra:art_39, paragraphe 12].
+**Model answer:** Oui, le CRA prévoit des allègements pour les petites entreprises comme la vôtre. La Commission doit fournir des orientations spécifiques pour faciliter leur conformité, notamment en simplifiant la documentation technique via un formulaire adapté [cra:art_33, par. 5]. Les redevances pour les évaluations de conformité sont réduites en fonction des besoins spécifiques des microentreprises et petites entreprises [cra:art_32]. Les organismes notifiés doivent aussi appliquer des conditions justes et proportionnées pour éviter une charge inutile [cra:art_39, par. 12]. Les États membres doivent organiser des activités de sensibilisation et mettre en place des canaux de communication pour répondre à vos questions [cra:art_33, par. a et b]. Cependant, les sources ne précisent pas de délai ou de modalités concrètes pour ces allègements.
 
 Expected: cra:art_33, cra:art_32, cra:art_64 · cited: cra:art_33, cra:art_32, cra:art_39 · given: cra:art_33, cra:art_32, cra:art_39, cra:art_3, cra:art_26, cra:art_17
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 123 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 111 s
 
-## q035 · multi · en · TO CHECK
+## q035 · multi · en · OK
 
 **Question:** We make firewalls. How are they classified, and can we assess conformity ourselves?
 
 **Reference answer:** Firewalls and intrusion detection and prevention systems are important products of class II (Annex III). Class II products cannot use internal control (module A): they need EU-type examination (module B) followed by module C, full quality assurance (module H), or, where available and applicable, a European cybersecurity certification scheme at assurance level at least 'substantial' (Article 32(3)).
 
-**Model answer:** Les textes fournis ne permettent pas de répondre à cette question sur la classification spécifique des firewalls dans le cadre du CRA. However, based on the provided sources, here are key points for your firewalls under the CRA: Firewalls are listed under **Class II** in Annex III [cra:anx_III], meaning they fall within the scope of the CRA. Manufacturers can assess conformity using **internal control procedures (module A)** in Annex VIII [cra:anx_VIII], provided they meet the essential cybersecurity requirements in Part I of Annex I [cra:anx_I]. The manufacturer must document the cybersecurity risk assessment and demonstrate compliance with requirements like no known vulnerabilities, secure default configuration, and timely security updates.
+**Model answer:** Firewalls fall under Class II products with digital elements, as listed in Annex III, point 2 [cra:anx_III]. According to the Cyber Resilience Act, manufacturers of these products can assess conformity themselves using the internal control procedure (module A) in Annex VIII [cra:art_32]. This means you can perform the conformity assessment internally without involving a notified body, provided you meet the essential cybersecurity requirements in Part I of Annex I.
 
-Expected: cra:anx_III, cra:art_32 · cited: cra:anx_III, cra:anx_VIII, cra:anx_I · given: cra:art_13, cra:anx_I, cra:art_32, cra:anx_VIII, cra:art_47, cra:anx_III, cra:art_12
+Expected: cra:anx_III, cra:art_32 · cited: cra:anx_III, cra:art_32, cra:anx_VIII, cra:anx_I · given: cra:art_13, cra:anx_I, cra:art_32, cra:anx_VIII, cra:art_47, cra:anx_III, cra:art_12
 
-Checks: supported_citations yes, answered NO, cites_expected yes · 110 s
+Checks: supported_citations yes, answered yes, cites_expected yes · 98 s
 
 ## q036 · trap · fr · TO CHECK
 
@@ -439,11 +439,11 @@ Checks: supported_citations yes, answered NO, cites_expected yes · 110 s
 
 **Reference answer:** Non. Les produits mis sur le marché avant le 11 décembre 2027 ne sont soumis aux exigences du règlement que s'ils font l'objet d'une modification substantielle à partir de cette date (article 69, paragraphe 2). Mais les obligations de signalement de l'article 14 s'appliquent aussi à ces produits (article 69, paragraphe 3), et ce dès le 11 septembre 2026 (article 71).
 
-**Model answer:** Les produits comportant des éléments numériques mis sur le marché avant le **11 décembre 2027** ne sont soumis aux exigences du CRA **que si** ils font l’objet d’une **modification substantielle après cette date** [cra:art_69, paragraphe 2]. Cependant, **l’article 14** (obligations de communication des risques cybersécurité) s’applique **à tous les produits concernés mis sur le marché le 11 décembre 2027**, sans condition de modification [cra:art_69, paragraphe 3].
+**Model answer:** Les produits comportant des éléments numériques vendus avant le 11 décembre 2027 ne sont pas automatiquement exclus du CRA. Selon l’article 69, paragraphes 2 et 3 [cra:art_69], ils ne sont soumis aux exigences du règlement que si : - ils subissent une modification substantielle après le 11 décembre 2027 [cra:art_69:paragraphe 2], - ou si, pour les produits mis sur le marché le 11 décembre 2027, les obligations de l’article 14 s’appliquent immédiatement [cra:art_69:paragraphe 3]. Ainsi, les produits non modifiés restent hors du champ d’application du CRA.
 
 Expected: cra:art_69, cra:art_71 · cited: cra:art_69, cra:art_14 · given: cra:art_69, cra:art_7, cra:art_71, cra:art_4, cra:art_14, cra:art_35, cra:art_27, cra:art_8
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 118 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 134 s
 
 ## q037 · trap · fr · TO CHECK
 
@@ -455,19 +455,19 @@ Checks: supported_citations yes, answered yes, cites_expected yes, key_figures N
 
 Expected: cra:anx_I, cra:anx_VII, cra:anx_II · cited: none · given: cra:art_47, cra:art_20, cra:art_4, cra:art_14, cra:art_13
 
-Checks: supported_citations yes, answered NO, cites_expected NO · 73 s
+Checks: supported_citations yes, answered NO, cites_expected NO · 76 s
 
-## q038 · out_of_scope · en · TO CHECK
+## q038 · out_of_scope · en · OK
 
 **Question:** Under NIS2, how quickly must an essential entity notify a significant incident to its CSIRT?
 
 **Reference answer:** The corpus holds the CRA and the RED delegated act, not Directive (EU) 2022/2555 (NIS2), which the CRA only refers to. The assistant must say the texts do not answer this, and must not present the CRA's own reporting deadlines for manufacturers as the NIS2 rules.
 
-**Model answer:** Sous le régime du **NIS2**, les entités essentielles doivent notifier une **incident significatif** à leur **CSIRT** dans les **72 heures** suivant leur prise de connaissance de l’incident, conformément à l’**Article 14(3) de la CRA** [cra:art_14]. Cette notification doit inclure des informations générales sur la nature de l’incident, une évaluation initiale et les mesures correctives ou atténuantes déjà prises ou recommandées aux utilisateurs.
+**Model answer:** The provided texts do not answer this question.
 
-Expected: none (out of scope) · cited: cra:art_14 · given: cra:art_17, cra:art_14, cra:art_15, cra:art_16
+Expected: none (out of scope) · cited: none · given: cra:art_17, cra:art_14, cra:art_15, cra:art_16
 
-Checks: supported_citations yes, refused NO · 88 s
+Checks: supported_citations yes, declines yes · 65 s
 
 ## q039 · out_of_scope · fr · OK
 
@@ -479,16 +479,16 @@ Checks: supported_citations yes, refused NO · 88 s
 
 Expected: none (out of scope) · cited: none · given: cra:art_5, cra:art_2, cra:art_1, cra:art_12, cra:art_57, cra:art_56, cra:art_14
 
-Checks: supported_citations yes, refused yes · 92 s
+Checks: supported_citations yes, declines yes · 97 s
 
-## q040 · out_of_scope · fr · TO CHECK
+## q040 · out_of_scope · fr · OK
 
 **Question:** Concrètement, à quel organisme français doit-on envoyer nos notifications de vulnérabilités ?
 
 **Reference answer:** Les textes ne nomment pas les CSIRT nationaux : le règlement renvoie au CSIRT désigné comme coordinateur par chaque État membre, et les notifications passent par la plateforme unique de signalement. Le corpus ne permet pas de dire quel organisme est désigné en France : l'assistant doit le dire et ne pas l'inventer.
 
-**Model answer:** D'après les sources fournies, les notifications de vulnérabilités activement exploitées doivent être envoyées via une **plateforme unique de signalement** mise en place par l’UE, et non directement à un organisme notifié français. Le fabricant doit transmettre ces notifications au **CSIRT désigné comme coordinateur** (via la plateforme unique) et à l’**ENISA** (Agence européenne de cybersécurité), conformément à l’[article 14:art_14]. La notification doit être faite par l’intermédiaire de cette plateforme unique, sans préciser d’organisme notifié français spécifique dans les textes.
+**Model answer:** D’après les sources fournies, les notifications de vulnérabilités activement exploitées doivent être envoyées au CSIRT désigné comme coordinateur et à l’ENISA (Agence européenne de cybersécurité) via la plateforme unique de signalement créée par l’article 16 [cra:art_16]. Le fabricant doit d’abord informer ce CSIRT coordonnateur dans les 24 heures après avoir identifié la vulnérabilité activement exploitée [cra:art_14]. Les détails précis sur la plateforme unique et le CSIRT français ne sont pas détaillés dans les textes fournis. Les textes ne précisent pas non plus si une notification doit être envoyée uniquement à l’ENISA ou à un organisme spécifique français. Les sources ne permettent pas de répondre à cette question concernant un organisme français spécifique.
 
-Expected: none (out of scope) · cited: cra:art_14 · given: cra:anx_VIII, cra:art_14, cra:art_41, cra:art_16, cra:art_3
+Expected: none (out of scope) · cited: cra:art_16, cra:art_14 · given: cra:anx_VIII, cra:art_14, cra:art_41, cra:art_16, cra:art_3
 
-Checks: supported_citations yes, refused NO · 124 s
+Checks: supported_citations yes, declines yes · 140 s
