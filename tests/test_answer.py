@@ -41,7 +41,8 @@ def test_the_prompt_gives_labelled_passages_then_the_question(bm25_only):
     system, user = model.received
     assert "[cra:art_14]" in system  # the citation format is explained
     assert user.startswith("Sources:")
-    assert user.endswith(f"Question: {question}")
+    assert f"Question: {question}" in user
+    assert user.endswith(answer.REMINDERS["fr"])  # the rules again, last thing the model reads
     assert all(f"[{s.id}]" in user for s in result.sources)
     assert len({s.id for s in result.sources}) == len(result.sources)  # one block per section
 
@@ -62,6 +63,20 @@ def test_passages_are_capped_per_section(bm25_only):
 def test_citations_are_read_in_any_layout():
     text = "Oui [cra:art_14], voir aussi cra:anx_I et [cra:art_14, red-da:art_3]."
     assert answer.cited_ids(text) == ("cra:art_14", "cra:anx_I", "red-da:art_3")
+
+
+def test_plain_references_to_given_sources_count_as_citations():
+    text = "Selon l'article 54 et l'Annexe V, puis Article 30(1) ; l'article 99 n'est pas fourni."
+    given = ["cra:art_54", "cra:anx_V", "cra:art_30"]
+    assert answer.cited_ids(text, given) == ("cra:art_54", "cra:art_30", "cra:anx_V")
+
+
+def test_ids_are_read_whatever_their_case():
+    assert answer.cited_ids("voir (RED-da:art_1) et [CRA:ANX_I]") == ("red-da:art_1", "cra:anx_I")
+
+
+def test_markdown_emphasis_is_removed():
+    assert answer.clean("## Titre\nLe **CSIRT** et __ENISA__") == "Titre\nLe CSIRT et ENISA"
 
 
 def test_a_citation_absent_from_the_sources_is_flagged():

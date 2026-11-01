@@ -8,6 +8,7 @@ from pathlib import Path
 
 from cra_rag import (
     answer,
+    answer_eval,
     chunks,
     dense,
     download,
@@ -185,6 +186,51 @@ def _ask(args: argparse.Namespace) -> int:
     return 0
 
 
+def _eval_answers(args: argparse.Namespace) -> int:
+    method = args.method
+    if method == "auto":
+        method = "hybrid" if (dense.INDEX_DIR / "qdrant").exists() else "bm25"
+    question_set = questions.load(args.file)
+    if args.only:
+        wanted = set(args.only.split(","))
+        question_set = [q for q in question_set if q.id in wanted]
+    searcher = _open_retriever(args.raw, [method])
+    if searcher is None:
+        return 1
+    model = llm.OllamaLLM(model=args.model)
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model)
+    print(f"{len(question_set)} questions, {method} search, {args.model}.")
+    print("Answers already saved with the same settings are reused: interrupt any time.")
+    try:
+        records = answer_eval.run(
+            question_set, searcher, model, method, args.passages, path, log=print
+        )
+    except (embed.EmbeddingError, llm.LLMError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        searcher.close()
+
+    report = path.with_suffix(".md")
+    if args.only:  # a partial run shows its answers but leaves the full report alone
+        for record in records:
+            q = next(q for q in question_set if q.id == record["id"])
+            verdicts = answer_eval.checks(q, record)
+            marks = ", ".join(f"{n} {'yes' if ok else 'NO'}" for n, ok in verdicts.items())
+            print(f"\n{q.id}: {record['answer']}\n  -> {marks}")
+    else:
+        answer_eval.write_report(question_set, records, report)
+    print("\nAutomatic checks:")
+    totals = answer_eval.summary(question_set, records)
+    for name, label in answer_eval.CHECK_LABELS.items():
+        if name in totals:
+            passed, count = totals[name]
+            print(f"  {label:<50} {passed:>2}/{count:<2} ({passed / count:.0%})")
+    if not args.only:
+        print(f"\nEvery answer, with its checks: {report}")
+    return 0
+
+
 COLUMNS = [f"recall@{k}" for k in evaluate.KS] + ["mrr"]
 
 
@@ -318,6 +364,17 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--model", default=llm.CHAT_MODEL)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_ask)
+
+    cmd = commands.add_parser(
+        "eval-answers", help="answer the reference questions and check the answers"
+    )
+    cmd.add_argument("--only", help="comma-separated question ids, e.g. q001,q008")
+    cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
+    cmd.add_argument("--passages", type=int, default=8)
+    cmd.add_argument("--model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
+    cmd.add_argument("--raw", type=Path, default=RAW_DIR)
+    cmd.set_defaults(handler=_eval_answers)
 
     cmd = commands.add_parser("index", help="build the vector index (needs Ollama, ~12 min)")
     cmd.add_argument("--model", default=embed.EMBEDDING_MODEL)

@@ -272,8 +272,8 @@ type = "lookup"
 question = "On achète des routeurs à un fabricant asiatique et on les vend sous notre propre marque. Quelles obligations avons-nous ?"
 expected = ["cra:art_21"]
 answer = """Vous êtes considérés comme fabricant. Un importateur ou un distributeur qui met un produit sur
-le marché sous son propre nom ou sa propre marque est soumis aux articles 13 (obligations des
-fabricants) et 14 (signalement). Il en va de même s'il apporte une modification substantielle à un
+le marché sous son propre nom ou sa propre marque est soumis aux articles 13 et 14 (obligations
+des fabricants et signalement). Il en va de même s'il apporte une modification substantielle à un
 produit déjà mis sur le marché (article 21)."""
 tags = ["opérateurs économiques", "fabricant"]
 

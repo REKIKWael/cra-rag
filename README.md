@@ -74,6 +74,7 @@ uv run cra-rag embed-speed              # time the embedding model (needs Ollama
 uv run cra-rag index                    # build the vector index (Ollama + bge-m3, once)
 uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid search
 uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
+uv run cra-rag eval-answers             # answer the 40 questions, check them (resumable)
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 
