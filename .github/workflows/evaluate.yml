@@ -47,13 +47,20 @@ jobs:
           df -h /
 
       - name: Install and start Ollama
+        # Run 1 lost the runner while the judge model was working: a model running on
+        # every CPU can starve the runner's own process. So Ollama runs here with the
+        # lowest CPU priority (nice) and one model in memory at a time.
         run: |
           curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION="$OLLAMA_VERSION" sh
-          up() { curl --silent --fail http://127.0.0.1:11434/api/version > /dev/null; }
-          wait_up() { for attempt in $(seq 1 30); do up && return 0; sleep 2; done; return 1; }
-          # The install script starts Ollama as a service; start it by hand if it did not.
-          wait_up || { nohup ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 & wait_up; }
+          sudo systemctl disable --now ollama 2>/dev/null || true
+          OLLAMA_MAX_LOADED_MODELS=1 OLLAMA_NUM_PARALLEL=1 \
+            nohup nice -n 19 ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:11434/api/version > /dev/null && break
+            sleep 2
+          done
           ollama --version
+          free -m
 
       - name: Download the models
         run: |
@@ -62,7 +69,8 @@ jobs:
           ollama pull ministral-3:8b  # judge
 
       - name: Restore the embeddings of earlier runs
-        uses: actions/cache@v6
+        id: embeddings
+        uses: actions/cache/restore@v6
         with:
           path: data/index/bge-m3.cache.jsonl
           key: embeddings-bge-m3-${{ hashFiles('corpus/raw/**', 'src/cra_rag/parse.py', 'src/cra_rag/chunks.py') }}
@@ -70,6 +78,14 @@ jobs:
 
       - name: Build the vector index
         run: uv run cra-rag index
+
+      - name: Save the embeddings for the next runs
+        # Saved now rather than at the end of the job, so a later failure keeps them.
+        if: steps.embeddings.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: data/index/bge-m3.cache.jsonl
+          key: ${{ steps.embeddings.outputs.cache-primary-key }}
 
       - name: Score the search
         run: |
@@ -89,8 +105,14 @@ jobs:
         run: uv run cra-rag eval-answers
 
       - name: Judge the answers
-        timeout-minutes: 90
-        run: uv run cra-rag judge
+        timeout-minutes: 120
+        run: |
+          # One line a minute on memory and load, to see what happens if the runner suffers.
+          (while sleep 60; do
+            echo "[monitor] memory $(free -m | awk '/Mem:/ {print $3 "/" $2}') MB, load $(cut -d' ' -f1 /proc/loadavg)"
+          done) &
+          trap 'kill $!' EXIT
+          uv run cra-rag judge
 
       - name: Write the scores on the run page
         run: |
@@ -109,4 +131,4 @@ jobs:
 
       - name: Ollama logs
         if: failure()
-        run: journalctl --unit ollama --no-pager | tail -n 100 || cat "$RUNNER_TEMP/ollama.log"
+        run: tail -n 100 "$RUNNER_TEMP/ollama.log"

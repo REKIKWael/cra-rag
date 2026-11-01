@@ -243,7 +243,8 @@ def _judge(args: argparse.Namespace) -> int:
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     in_set = {q.id for q in question_set}
     records = [r for r in records if r["id"] in in_set]
-    judge_llm = llm.OllamaLLM(model=args.judge_model, max_output_tokens=250)
+    # A verdict needs about 1,000 tokens of context: a smaller window saves memory.
+    judge_llm = llm.OllamaLLM(model=args.judge_model, max_output_tokens=250, context_tokens=4096)
     print(f"Judging {len(records)} answers of {args.answers_model} with {args.judge_model}.")
     print("Verdicts already given to the same answers are reused: interrupt any time.")
     try:
