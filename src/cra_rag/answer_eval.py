@@ -26,6 +26,7 @@ from cra_rag.retriever import Retriever
 RESULTS_DIR = Path("eval/results")
 NUMBER = re.compile(r"\d+(?:[ \u00a0\u202f.,]\d+)*")
 MILLIONS = re.compile(r"(\d+(?:[.,]\d+)?)\s*millions?\b", re.IGNORECASE)
+THOUSANDS = re.compile(r"\d{1,3}(?:[   .,]\d{3})+")
 # References to articles or regulations are not facts to repeat: the citation does that.
 REFERENCE = re.compile(
     r"\((?:articles?|annexe?s?)\b[^)]*\)"  # "(article 13, paragraphe 20)"
@@ -54,7 +55,11 @@ def key_figures(text: str) -> set[str]:
     text = MILLIONS.sub(lambda m: str(round(float(m.group(1).replace(",", ".")) * 1e6)), text)
     found = set()
     for number in NUMBER.findall(text):
-        compact = re.sub(r"[ \u00a0\u202f]", "", number).replace(",", ".").rstrip(".")
+        number = number.rstrip(".,")
+        if THOUSANDS.fullmatch(number):  # "5,000,000", "5.000.000", "5 000 000"
+            compact = re.sub(r"\D", "", number)
+        else:  # "2,5" and "2.5" are the same decimal
+            compact = re.sub(r"[ \u00a0\u202f]", "", number).replace(",", ".")
         if len(compact.replace(".", "")) >= 2:
             found.add(compact)
     return found

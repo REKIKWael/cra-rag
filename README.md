@@ -14,7 +14,7 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 4 of 7 done (retrieval).
+> **Status:** work in progress, step 5 of 7 done (cited answers).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -56,7 +56,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 2. Corpus ingestion: download the texts, split them into articles, annexes and recitals
 - [x] 3. Reference question set: 40 questions in French and English, with the sections that answer them
 - [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
-- [ ] 5. Generation: cited answers from a language model behind a provider interface (in progress)
+- [x] 5. Generation: cited answers from a local model behind a provider interface, checked on the 40 questions
 - [ ] 6. FastAPI service and Docker image
 - [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
 
@@ -121,6 +121,42 @@ Searching both languages at once (cross-lingual) changed nothing, so each
 question is searched in its own language. A test in CI fails if BM25 falls
 below recall@10 = 0.80; the semantic and hybrid scores need Ollama and will be
 checked in CI with the end-to-end evaluation (step 7).
+
+## Answer results
+
+Answers of `ministral-3:3b` (3 billion parameters, run with Ollama on a 2016
+laptop CPU: about 2 minutes per answer) to the 40 reference questions, with the
+automatic checks of `uv run cra-rag eval-answers`. Every question, reference
+answer and model answer is in
+[`eval/results/answers-ministral-3_3b.md`](eval/results/answers-ministral-3_3b.md).
+
+| Check | Prompt v1 | Prompt v2 |
+|---|---|---|
+| Answers, no false refusal (36 answerable questions) | 31 | **34** |
+| Cites an expected section (36) | 24 | **29** |
+| Cites only the sources it was given (40) | 38 | **39** |
+| Repeats the key figures of the reference answer (8) | 2 | 3 |
+| Says when the texts do not answer (4 out-of-scope) | 2 | **4** |
+
+Prompt v2 asks to refuse only when no source deals with the question, allows
+partial answers, forbids other laws by name (NIS2), and repeats the rules after
+the question, in its language: small models follow best what they read last.
+
+What reading the answers shows, beyond the checks:
+
+- **Retrieval** missed the decisive section three times (q007, q022, q037), and
+  the model then answered wrongly or refused.
+- **The model** makes its own errors: incomplete answers (q001 gives the 24-hour
+  early warning but not the 72-hour notification nor the 14-day final report),
+  a wrong source (q023 attributes an Annex I rule to Article 13), misreadings
+  (q013, q021).
+- **The corpus** matters: q036 repeats the French wording of Article 69(3)
+  ("le 11 décembre 2027" instead of "before"), so the divergence between
+  language versions reaches the answers.
+
+The checks above are indicators. Judging whether an answer is right needs a
+judge model comparing it with the reference answer (step 7). The next lever on
+quality is a larger model behind the same interface, to be measured the same way.
 
 ## Development
 

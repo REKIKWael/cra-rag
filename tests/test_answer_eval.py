@@ -73,6 +73,11 @@ def test_key_figures_written_in_millions_match_digits():
     assert answer_eval.key_figures("15 millions d'euros") == answer_eval.key_figures("15 000 000")
 
 
+def test_thousands_separators_of_every_language_give_the_same_figure():
+    written = ["EUR 5,000,000", "5.000.000 EUR", "5 000 000 EUR", "5 millions d'euros"]
+    assert all(answer_eval.key_figures(text) == {"5000000"} for text in written)
+
+
 def test_a_run_limited_to_some_questions_keeps_the_other_answers(tmp_path, bm25_only):
     path = tmp_path / "answers.jsonl"
     reply = FakeLLM("Au plus tard 24 heures [cra:art_14].")

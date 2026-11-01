@@ -8,7 +8,7 @@ of correctness by a model comes at step 7.
 | Answers (no false refusal) | 34/36 (94%) |
 | Cites an expected section | 29/36 (81%) |
 | Cites only the sources it was given | 39/40 (98%) |
-| Repeats the key figures of the reference answer | 2/8 (25%) |
+| Repeats the key figures of the reference answer | 3/8 (38%) |
 | Says when the texts do not answer (out of scope) | 4/4 (100%) |
 
 Median time per answer: 122 s on the machine that ran it.
@@ -325,7 +325,7 @@ Expected: cra:art_13 · cited: cra:art_13 · given: cra:anx_I, cra:anx_II, cra:a
 
 Checks: supported_citations yes, answered yes, cites_expected yes · 99 s
 
-## q027 · lookup · en · TO CHECK
+## q027 · lookup · en · OK
 
 **Question:** What fine do we risk if we give incomplete or misleading information to a market surveillance authority?
 
@@ -335,7 +335,7 @@ Checks: supported_citations yes, answered yes, cites_expected yes · 99 s
 
 Expected: cra:art_64 · cited: cra:art_64 · given: cra:art_64, cra:art_52, cra:art_20, cra:art_54, cra:art_59, cra:art_63
 
-Checks: supported_citations yes, answered yes, cites_expected yes, key_figures NO · 81 s
+Checks: supported_citations yes, answered yes, cites_expected yes, key_figures yes · 81 s
 
 ## q028 · lookup · fr · OK
 
