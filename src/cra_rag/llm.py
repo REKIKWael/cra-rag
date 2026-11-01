@@ -61,14 +61,21 @@ class OllamaLLM:
         }
 
     def chat(
-        self, system: str, user: str, on_token: Callable[[str], None] | None = None
+        self,
+        system: str,
+        user: str,
+        on_token: Callable[[str], None] | None = None,
+        schema: dict | None = None,
     ) -> Completion:
+        """`schema`: a JSON schema the reply must follow (Ollama structured outputs)."""
         request = {
             "model": self.model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "stream": True,
             "options": self.options,
         }
+        if schema:
+            request["format"] = schema
         pieces: list[str] = []
         final: dict = {}
         try:

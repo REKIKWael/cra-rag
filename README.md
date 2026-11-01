@@ -1,6 +1,7 @@
 # cra-rag
 
 [![CI](https://github.com/REKIKWael/cra-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/REKIKWael/cra-rag/actions/workflows/ci.yml)
+[![Evaluate](https://github.com/REKIKWael/cra-rag/actions/workflows/evaluate.yml/badge.svg)](https://github.com/REKIKWael/cra-rag/actions/workflows/evaluate.yml)
 
 A question-answering assistant for EU product cybersecurity regulation: the
 **Cyber Resilience Act** (Regulation (EU) 2024/2847) and the **RED delegated act**
@@ -14,7 +15,7 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 6 of 7 done (API and Docker).
+> **Status:** work in progress, step 7 of 7 under way (evaluation with a judge model).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -75,6 +76,7 @@ uv run cra-rag index                    # build the vector index (Ollama + bge-m
 uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid search
 uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
 uv run cra-rag eval-answers             # answer the 40 questions, check them (resumable)
+uv run cra-rag judge                    # judge the answers with ministral-3:8b (resumable)
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 
@@ -148,8 +150,8 @@ What this shows:
 
 Searching both languages at once (cross-lingual) changed nothing, so each
 question is searched in its own language. A test in CI fails if BM25 falls
-below recall@10 = 0.80; the semantic and hybrid scores need Ollama and will be
-checked in CI with the end-to-end evaluation (step 7).
+below recall@10 = 0.80; the semantic and hybrid scores need Ollama and are held
+to the same floor by the [evaluation workflow](#evaluation-in-ci).
 
 ## Answer results
 
@@ -186,6 +188,31 @@ What reading the answers shows, beyond the checks:
 The checks above are indicators. Judging whether an answer is right needs a
 judge model comparing it with the reference answer (step 7). The next lever on
 quality is a larger model behind the same interface, to be measured the same way.
+
+## Evaluation in CI
+
+`uv run cra-rag judge` asks a larger model, `ministral-3:8b`, to compare every
+answer with the reference answer written by the expert, and to return a verdict
+in JSON that follows a schema (Ollama structured outputs), so it can always be read:
+
+| Verdict | Means |
+|---|---|
+| correct | The key facts of the reference answer, nothing contradicting it |
+| partial | Nothing wrong, but key facts missing |
+| incorrect | A contradiction, a false fact, a wrong conclusion, or a refusal although the texts answer |
+
+Verdicts are saved in `eval/results/judgments-*.jsonl` with a fingerprint of the
+answer, the judge model and its instructions, and reused while none of them changes.
+
+The [Evaluate workflow](.github/workflows/evaluate.yml) runs the whole chain on
+GitHub's free runners, with the real models, when started by hand from the
+Actions tab: it installs Ollama, builds the vector index, scores the three search
+methods (and fails below recall@10 = 0.80), recomputes the answers whose
+settings changed, judges them, and publishes the scores on the run page with the
+result files as an artifact.
+
+A judge is a model too, so its verdicts are checked against the expert's own
+reading before they are trusted.
 
 ## Development
 

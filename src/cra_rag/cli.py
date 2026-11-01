@@ -1,6 +1,7 @@
 """Command-line entry point: `uv run cra-rag <command>`."""
 
 import argparse
+import json
 import sys
 import time
 from collections import Counter
@@ -14,6 +15,7 @@ from cra_rag import (
     download,
     embed,
     evaluate,
+    judge,
     llm,
     parse,
     questions,
@@ -219,7 +221,8 @@ def _eval_answers(args: argparse.Namespace) -> int:
             marks = ", ".join(f"{n} {'yes' if ok else 'NO'}" for n, ok in verdicts.items())
             print(f"\n{q.id}: {record['answer']}\n  -> {marks}")
     else:
-        answer_eval.write_report(question_set, records, report)
+        judgments = judge.still_valid(question_set, records, judge.judgments_path(path))
+        answer_eval.write_report(question_set, records, report, judgments)
     print("\nAutomatic checks:")
     totals = answer_eval.summary(question_set, records)
     for name, label in answer_eval.CHECK_LABELS.items():
@@ -228,6 +231,38 @@ def _eval_answers(args: argparse.Namespace) -> int:
             print(f"  {label:<50} {passed:>2}/{count:<2} ({passed / count:.0%})")
     if not args.only:
         print(f"\nEvery answer, with its checks: {report}")
+    return 0
+
+
+def _judge(args: argparse.Namespace) -> int:
+    question_set = questions.load(args.file)
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.answers_model)
+    if not path.exists():
+        print(f"Error: no answers in {path}. Run: uv run cra-rag eval-answers", file=sys.stderr)
+        return 1
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    in_set = {q.id for q in question_set}
+    records = [r for r in records if r["id"] in in_set]
+    judge_llm = llm.OllamaLLM(model=args.judge_model, max_output_tokens=250)
+    print(f"Judging {len(records)} answers of {args.answers_model} with {args.judge_model}.")
+    print("Verdicts already given to the same answers are reused: interrupt any time.")
+    try:
+        judgments = judge.run(
+            question_set, records, judge_llm, judge.judgments_path(path), log=print
+        )
+    except llm.LLMError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    report = path.with_suffix(".md")
+    answer_eval.write_report(question_set, records, report, judgments)
+
+    print("\nVerdicts:")
+    for group, counts in judge.tally(judgments, question_set).items():
+        total = sum(counts.values())
+        detail = ", ".join(f"{v} {counts[v]}" for v in judge.VERDICTS)
+        unreadable = f", unreadable {counts['unreadable']}" if counts["unreadable"] else ""
+        print(f"  {group:<13} {total:>2} questions: {detail}{unreadable}")
+    print(f"\nEvery verdict with its reason: {report}")
     return 0
 
 
@@ -271,7 +306,7 @@ def _eval_search(args: argparse.Namespace) -> int:
     if len(methods) > 1:
         _score_table(results)
         print("\nFor the details of one method: uv run cra-rag eval-search --method dense")
-        return 0
+        return _check_floor(results, args.fail_under)
 
     [method_results] = results.values()
     groups = {"all": method_results}
@@ -287,7 +322,20 @@ def _eval_search(args: argparse.Namespace) -> int:
     for r in misses:
         print(f"  {r.question.id}  expected {', '.join(r.question.expected)}")
         print(f"        got      {', '.join(r.ranking[:5])}")
-    return 0
+    return _check_floor(results, args.fail_under)
+
+
+def _check_floor(results: dict[str, list[evaluate.Result]], floor: float | None) -> int:
+    """Exit code 1 if a method finds less than `floor` of the expected sections in its top 10."""
+    if floor is None:
+        return 0
+    scores = {m: evaluate.summary(r)["recall@10"] for m, r in results.items()}
+    below = {m: s for m, s in scores.items() if s < floor}
+    for method, score in below.items():
+        print(f"\nFAILED: {method} recall@10 = {score:.2f}, below the floor of {floor:.2f}")
+    if not below:
+        print(f"\nEvery method keeps recall@10 at or above {floor:.2f}")
+    return 1 if below else 0
 
 
 def _embed_speed(args: argparse.Namespace) -> int:
@@ -360,6 +408,12 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd = commands.add_parser("eval-search", help="score the search on the reference questions")
     cmd.add_argument("--method", choices=["all", *retriever.METHODS], default="bm25")
+    cmd.add_argument(
+        "--fail-under",
+        type=float,
+        metavar="RECALL",
+        help="exit with an error if recall@10 falls below this value (used in CI)",
+    )
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_search)
@@ -383,6 +437,12 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.add_argument("--raw", type=Path, default=RAW_DIR)
     cmd.set_defaults(handler=_eval_answers)
+
+    cmd = commands.add_parser("judge", help="judge the saved answers with a larger model")
+    cmd.add_argument("--judge-model", default=judge.JUDGE_MODEL)
+    cmd.add_argument("--answers-model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
+    cmd.set_defaults(handler=_judge)
 
     cmd = commands.add_parser("serve", help="run the HTTP API (documentation at /docs)")
     cmd.add_argument("--host", default="127.0.0.1")

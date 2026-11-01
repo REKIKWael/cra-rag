@@ -1,0 +1,112 @@
+name: Evaluate
+
+# End-to-end evaluation with the real models, on GitHub's free runners (CPU only).
+# It takes from a few minutes to about an hour, too long for every push, so it is
+# run by hand: Actions tab > Evaluate > Run workflow.
+#
+# 1. Search: builds the vector index, scores BM25, semantic and hybrid search on
+#    the reference questions, and fails if one falls below recall@10 = 0.80.
+# 2. Answers: reuses the answers committed in eval/results/ when the settings are
+#    unchanged (model, prompt, search method); only changed ones are recomputed.
+# 3. Judge: a larger model compares every answer with the reference answer.
+#
+# The scores appear on the run page; the files are kept as the "eval-results" artifact.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  OLLAMA_VERSION: "0.40.13" # same version as compose.yaml
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  evaluate:
+    name: Search, answers and judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies (from the lock file)
+        run: uv sync --locked
+
+      - name: Free disk space for the models
+        # About 12 GB of models; the runner comes with toolchains this job does not use.
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+
+      - name: Install and start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION="$OLLAMA_VERSION" sh
+          up() { curl --silent --fail http://127.0.0.1:11434/api/version > /dev/null; }
+          wait_up() { for attempt in $(seq 1 30); do up && return 0; sleep 2; done; return 1; }
+          # The install script starts Ollama as a service; start it by hand if it did not.
+          wait_up || { nohup ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 & wait_up; }
+          ollama --version
+
+      - name: Download the models
+        run: |
+          ollama pull bge-m3          # embeddings (search)
+          ollama pull ministral-3:3b  # answers
+          ollama pull ministral-3:8b  # judge
+
+      - name: Restore the embeddings of earlier runs
+        uses: actions/cache@v6
+        with:
+          path: data/index/bge-m3.cache.jsonl
+          key: embeddings-bge-m3-${{ hashFiles('corpus/raw/**', 'src/cra_rag/parse.py', 'src/cra_rag/chunks.py') }}
+          restore-keys: embeddings-bge-m3-
+
+      - name: Build the vector index
+        run: uv run cra-rag index
+
+      - name: Score the search
+        run: |
+          status=0
+          uv run cra-rag eval-search --method all --fail-under 0.80 > search-scores.txt || status=$?
+          cat search-scores.txt
+          {
+            echo "## Search (36 questions with an answer in the corpus)"
+            echo '```'
+            cat search-scores.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - name: Answer the 40 questions (reuses the committed answers)
+        timeout-minutes: 90
+        run: uv run cra-rag eval-answers
+
+      - name: Judge the answers
+        timeout-minutes: 90
+        run: uv run cra-rag judge
+
+      - name: Write the scores on the run page
+        run: |
+          {
+            echo "## Answers of ministral-3:3b, judged by ministral-3:8b"
+            echo
+            sed -n '/^Verdicts of/,/^Median/p' eval/results/answers-ministral-3_3b.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-results
+          path: eval/results/
+
+      - name: Ollama logs
+        if: failure()
+        run: journalctl --unit ollama --no-pager | tail -n 100 || cat "$RUNNER_TEMP/ollama.log"

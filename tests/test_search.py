@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cra_rag import chunks, evaluate, parse, questions, search
+from cra_rag import chunks, cli, evaluate, parse, questions, search
 
 ROOT = Path(__file__).parent.parent
 
@@ -117,3 +117,13 @@ def test_bm25_does_not_get_worse(bm25_scores):
     # to the question set; a real regression in chunking or ranking goes below.
     assert bm25_scores["recall@10"] >= 0.80
     assert bm25_scores["mrr"] >= 0.44
+
+
+def test_eval_search_fails_when_recall_falls_below_the_floor(capsys):
+    # The Evaluate workflow relies on this exit code to fail the run.
+    raw = str(ROOT / "corpus" / "raw")
+    file = str(ROOT / "eval" / "questions.toml")
+    common = ["eval-search", "--raw", raw, "--file", file]
+    assert cli.main([*common, "--fail-under", "0.50"]) == 0
+    assert cli.main([*common, "--fail-under", "0.99"]) == 1
+    assert "FAILED: bm25 recall@10" in capsys.readouterr().out
