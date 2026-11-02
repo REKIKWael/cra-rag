@@ -12,242 +12,244 @@
 #
 # Leave verdict empty for an answer not reviewed yet. Then: uv run cra-rag agreement
 
+reviewer = "Claude (AI assistant), each answer checked against the corpus; not yet confirmed by the domain expert"  # who gave these verdicts
+
 [[review]]
 id = "q001"  # lookup, fr: On vient de découvrir qu'une faille de notre produit est exploitée par des atta…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Gives the 24-hour early warning, but not the 72-hour notification nor the 14-day final report."
 
 [[review]]
 id = "q002"  # trap, fr: Le CRA ne s'applique qu'en décembre 2027 : est-ce qu'on a vraiment besoin d'org…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Right conclusion (Article 14 from 11 September 2026), but opens by saying the texts do not answer and wrongly limits reporting to products placed on the market from that date (French wording of Article 69(3))."
 
 [[review]]
 id = "q003"  # multi, fr: Nous éditons un gestionnaire de mots de passe. Peut-on se contenter d'une auto-…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Says internal control (module A) is enough; password managers are class I (Annex III), where module A needs harmonised standards or a scheme."
 
 [[review]]
 id = "q004"  # lookup, fr: Pendant combien de temps doit-on fournir des correctifs de sécurité pour un pro…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Gives 10 years from placing on the market; the support period is at least 5 years, and 10 years is how long each update stays available."
 
 [[review]]
 id = "q005"  # lookup, en: What is the maximum fine if our product does not meet the essential cybersecuri…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q006"  # lookup, en: When does a vulnerability count as 'actively exploited' under the CRA?
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q007"  # trap, fr: Depuis quand les exigences de cybersécurité du règlement délégué RED sont-elles…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Says the requirements are not yet mandatory and no date is given (Article 3 of the delegated act was not retrieved). REFERENCE: Reference relies on Delegated Regulation 2023/2444, which is not in the corpus: the corpus alone gives 1 August 2024."
 
 [[review]]
 id = "q008"  # out_of_scope, fr: Quelles exigences de la norme EN 18031-1 portent sur l'authentification ?
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q009"  # lookup, fr: Peut-on livrer notre produit avec les protections désactivées, et laisser le cl…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Says protections may ship disabled; Annex I, Part I, point 2(b) requires a secure-by-default configuration."
 
 [[review]]
 id = "q010"  # lookup, fr: Qu'est-ce qu'on doit obligatoirement mettre dans la notice de notre produit côt…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Several items right; misses contact details, single point of contact for vulnerabilities, product identification, intended purpose, decommissioning and update instructions."
 
 [[review]]
 id = "q011"  # lookup, en: A market surveillance authority thinks our product is a serious cybersecurity r…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Corrective action, withdrawal and recall are right; provisional measures if the operator does not act are missing; the remark on fines is misleading."
 
 [[review]]
 id = "q012"  # lookup, fr: Un laboratoire d'essais veut devenir organisme notifié pour le CRA. Quelles con…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Legal personality and independence right; impartiality, competence, insurance, professional secrecy and coordination missing; adds the application procedure."
 
 [[review]]
 id = "q013"  # multi, fr: Notre produit n'est pas dans la liste des produits importants aujourd'hui. La C…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Yes is right, but 11 December 2025 is the deadline of an implementing act (Article 7(4)), not a limit on adding products; the 5-year delegation (Article 61(2)) is missing."
 
 [[review]]
 id = "q014"  # multi, fr: Nous fabriquons des cartes à puce sécurisées. Sont-elles des produits critiques…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Annex IV right, but ends with 'otherwise an internal assessment', while module A is not possible for critical products."
 
 [[review]]
 id = "q015"  # lookup, fr: On doit rédiger notre déclaration UE de conformité. Quelles informations doit-e…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Items 1 to 7 right; the date, place, name, function and signature of the signatory are missing (answer cut at the token limit)."
 
 [[review]]
 id = "q016"  # multi, fr: Peut-on mettre une version courte de la déclaration de conformité dans le carto…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q017"  # lookup, en: What do we need to put in our technical documentation file?
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Design, vulnerability handling, risk assessment and support period right; general description, standards applied, test reports and the EU declaration missing."
 
 [[review]]
 id = "q018"  # lookup, fr: Quelle est la différence entre le module A et le module H pour évaluer la confo…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Core difference right (A without notified body, H with one); wrong caveat on delegating module A; the quality system approval and surveillance are not stated."
 
 [[review]]
 id = "q019"  # lookup, fr: Nous fabriquons un dispositif médical connecté. Est-ce qu'il est concerné par l…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Refuses; Article 2(2) excludes medical devices (Regulation 2017/745)."
 
 [[review]]
 id = "q020"  # lookup, en: We import connected cameras made outside the EU. What do we have to check befor…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Annex I compliance, CE marking, declaration, technical documentation and conformity assessment right (security cameras are indeed Annex III class I, point 17); Article 13(15), (16) and (19) checks missing."
 
 [[review]]
 id = "q021"  # lookup, fr: On achète des routeurs à un fabricant asiatique et on les vend sous notre propr…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Says importer or distributor; selling under one's own brand makes you the manufacturer (Article 21)."
 
 [[review]]
 id = "q022"  # lookup, fr: Notre objet connecté dépend d'un serveur cloud que nous développons nous-mêmes.…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Says the cloud backend is not covered; remote data processing solutions are part of the product (Article 3(1) and (2))."
 
 [[review]]
 id = "q023"  # lookup, fr: Peut-on faire payer les mises à jour de sécurité à nos clients, par exemple dan…
-verdict = ""
+verdict = "correct"
 reference_ok = true
-note = ""
+note = "Facts right; attributed to Article 13 instead of Annex I, Part II, point 8."
 
 [[review]]
 id = "q024"  # lookup, en: Can we wait and ship our security fixes together with the next feature release?
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Without delay and separate updates where feasible are right, but opens with 'the texts do not forbid it'."
 
 [[review]]
 id = "q025"  # lookup, fr: On a trouvé une faille dans une bibliothèque open source que notre produit intè…
-verdict = ""
+verdict = "correct"
 reference_ok = true
-note = ""
+note = "All three obligations of Article 13(6) right; the extra points (coordinated disclosure policy, 10-year availability) are true."
 
 [[review]]
 id = "q026"  # lookup, fr: Est-ce qu'on doit dire à l'acheteur jusqu'à quand le produit recevra des mises …
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Yes is right, but the end date (month and year) at the time of purchase is missing; the 10-year figure is about update availability."
 
 [[review]]
 id = "q027"  # lookup, en: What fine do we risk if we give incomplete or misleading information to a marke…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q028"  # lookup, fr: Peut-on montrer un prototype pas encore conforme sur un salon, ou diffuser une …
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q029"  # lookup, fr: Nos équipements sont développés uniquement pour les forces armées. Le CRA s'app…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Right conclusion and citation tag, but the text names Article 8 instead of Article 2(7)."
 
 [[review]]
 id = "q030"  # lookup, en: Our product is pure software, there is nothing physical to stick a label on. Wh…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q031"  # lookup, fr: Une faille qui n'est pas exploitée, ou un incident évité de justesse : peut-on …
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q032"  # multi, fr: Un intégrateur modifie le firmware d'une caméra déjà vendue pour l'utiliser aut…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q033"  # multi, en: A non-profit foundation maintains an open-source library that companies use in …
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Steward definition and Article 24 duties right; reporting under Article 14(1) misattributed to Article 13(6); exemption from fines missing."
 
 [[review]]
 id = "q034"  # multi, fr: Nous sommes une petite entreprise de 20 personnes. Le CRA prévoit-il des allège…
-verdict = ""
+verdict = "partial"
 reference_ok = true
-note = ""
+note = "Simplified documentation, reduced fees and Member State support right; no fine for missing the 24-hour early warning (Article 64(10)) missing."
 
 [[review]]
 id = "q035"  # multi, en: We make firewalls. How are they classified, and can we assess conformity oursel…
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Class II right, but says module A is allowed; class II excludes internal control (Article 32(3))."
 
 [[review]]
 id = "q036"  # trap, fr: Les produits qu'on a vendus avant décembre 2027 échappent complètement au CRA, …
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Concludes that unmodified products stay out of the CRA; Article 14 reporting applies to them from 11 September 2026 (follows the French wording of Article 69(3)). REFERENCE: Reference follows the English Article 69(3); the published French text says 'le 11 décembre 2027'."
 
 [[review]]
 id = "q037"  # trap, fr: Le CRA nous oblige-t-il à publier la SBOM de nos produits ?
-verdict = ""
+verdict = "incorrect"
 reference_ok = true
-note = ""
+note = "Refuses although Annexes I, II and VII answer (retrieval missed them)."
 
 [[review]]
 id = "q038"  # out_of_scope, en: Under NIS2, how quickly must an essential entity notify a significant incident …
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q039"  # out_of_scope, fr: Au Royaume-Uni, quelles règles de cybersécurité s'appliquent à nos objets conne…
-verdict = ""
+verdict = "correct"
 reference_ok = true
 note = ""
 
 [[review]]
 id = "q040"  # out_of_scope, fr: Concrètement, à quel organisme français doit-on envoyer nos notifications de vu…
-verdict = ""
+verdict = "correct"
 reference_ok = true
-note = ""
+note = "Says the texts do not name the French body; CSIRT and ENISA via the single reporting platform is right (Article 14(1))."

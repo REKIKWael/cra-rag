@@ -23,6 +23,7 @@ def test_the_template_lists_every_question_with_an_empty_verdict(tmp_path):
     assert [r.id for r in reviews] == ["q001", "q002"]
     assert all(r.verdict == "" and r.reference_ok for r in reviews)
     assert review.compare(reviews, judged((1, "correct"))).count == 0
+    assert review.reviewer(path) == ""
 
 
 def test_agreement_and_kappa():

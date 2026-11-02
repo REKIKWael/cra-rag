@@ -15,7 +15,8 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** work in progress, step 7 of 7 under way (evaluation with a judge model).
+> **Status:** the 7 steps are done. The judge's verdicts are being confirmed by the
+> domain expert (see [Evaluation in CI](#evaluation-in-ci)).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -59,7 +60,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
 - [x] 5. Generation: cited answers from a local model behind a provider interface, checked on the 40 questions
 - [x] 6. FastAPI service and Docker image, built and smoke-tested in CI
-- [ ] 7. End-to-end evaluation (LLM-as-a-judge) in CI
+- [x] 7. End-to-end evaluation in CI, with a judge model checked against a human review
 
 ## Usage
 
@@ -77,6 +78,7 @@ uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid sear
 uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
 uv run cra-rag eval-answers             # answer the 40 questions, check them (resumable)
 uv run cra-rag judge                    # judge the answers with ministral-3:8b (resumable)
+uv run cra-rag agreement                # compare the judge with eval/expert_review.toml
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
 
@@ -192,7 +194,7 @@ quality is a larger model behind the same interface, to be measured the same way
 ## Evaluation in CI
 
 `uv run cra-rag judge` asks a larger model, `ministral-3:8b`, to compare every
-answer with the reference answer written by the expert, and to return a verdict
+answer with the reference answer of the question set, and to return a verdict
 in JSON that follows a schema (Ollama structured outputs), so it can always be read:
 
 | Verdict | Means |
@@ -211,8 +213,49 @@ methods (and fails below recall@10 = 0.80), recomputes the answers whose
 settings changed, judges them, and publishes the scores on the run page with the
 result files as an artifact.
 
-A judge is a model too, so its verdicts are checked against the expert's own
-reading before they are trusted.
+### What the judge says, and how far to trust it
+
+Verdicts of `ministral-3:8b` on the 40 answers of `ministral-3:3b`, from the
+Evaluate workflow (every verdict and its reason are in
+[the report](eval/results/answers-ministral-3_3b.md)):
+
+| Questions | Correct | Partial | Incorrect |
+|---|---|---|---|
+| all (40) | 17 | 8 | 15 |
+| lookup (24) | 9 | 5 | 10 |
+| multi (8) | 2 | 3 | 3 |
+| trap (4) | 3 | 0 | 1 |
+| out of scope (4) | 3 | 0 | 1 |
+
+A judge is a model too. To know how far its verdicts can be trusted, every
+answer was also reviewed by hand in [`eval/expert_review.toml`](eval/expert_review.toml),
+and `uv run cra-rag agreement` compares the two. This first review was made by
+Claude (an AI assistant), checking each answer against the text of the
+regulation; the domain expert's confirmation is pending.
+
+| Judge against the review | 40 answers |
+|---|---|
+| Same verdict | 28 (70 %) |
+| Cohen's kappa (agreement corrected for chance) | 0.55 |
+
+What the 12 disagreements show:
+
+- **Totals hide the errors.** The review counts 14 correct, 14 partial and 12
+  incorrect, close to the judge's totals, yet the two disagree on 12 answers,
+  6 in each direction.
+- **Too harsh when the judge trusts its own memory.** It rejected true
+  statements, claiming that Article 13(20) does not exist (q020), that the CRA
+  requires no coordinated vulnerability disclosure policy (q025), or that ENISA
+  receives no notifications (q040), although its instructions forbid using its
+  own knowledge of the law.
+- **Too lenient with long or hedged answers.** It saw items that are not there
+  (q015, q017), accepted a refusal although the texts answer (q037), and missed
+  a wrong conclusion (q036).
+
+The judge's totals are therefore an indicator, not yet a score to compare models
+with. The next lever: give the judge the passages each answer cites, so that it
+checks facts against the text rather than its memory, then measure the agreement
+again with the same command.
 
 ## Development
 

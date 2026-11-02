@@ -2,7 +2,7 @@
 
 The automatic checks of answer_eval.py see citations and refusals, not meaning.
 Here a second, larger model reads each answer next to the reference answer
-written by the expert, and gives a verdict:
+of the question set, and gives a verdict:
 
 - correct:   the key facts of the reference, nothing contradicting it;
 - partial:   nothing wrong, but key facts missing;
@@ -13,8 +13,8 @@ The judge answers in JSON following a schema, so its verdict can be read
 reliably. Verdicts are saved as they come and reused while the answer, the
 judge model and the instructions stay the same.
 
-A judge is a model, so it can be wrong too: its verdicts must be checked
-against the expert's own reading on a sample (see the README).
+A judge is a model, so it can be wrong too: review.py measures how often its
+verdicts agree with a human review (`uv run cra-rag agreement`).
 """
 
 import hashlib

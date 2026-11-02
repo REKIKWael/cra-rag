@@ -38,6 +38,8 @@ HEADER = """\
 #   reference_ok = false   if the reference answer itself needs fixing (say why in note)
 #
 # Leave verdict empty for an answer not reviewed yet. Then: uv run cra-rag agreement
+
+reviewer = ""  # who gave these verdicts
 """
 
 
@@ -70,15 +72,23 @@ def write_template(question_set: list[Question], path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
-def load(path: Path, known_ids: set[str]) -> list[Review]:
-    """Read the file. Raises ReviewError listing every problem found."""
+def _read(path: Path) -> dict:
     try:
-        data = tomllib.loads(path.read_text(encoding="utf-8"))
+        return tomllib.loads(path.read_text(encoding="utf-8"))
     except UnicodeDecodeError as exc:
         raise ReviewError(f"{path} is not saved as UTF-8 ({exc})") from exc
     except tomllib.TOMLDecodeError as exc:
         raise ReviewError(f"{path} is not valid TOML: {exc}") from exc
 
+
+def reviewer(path: Path) -> str:
+    """Who gave the verdicts, as written at the top of the file."""
+    return str(_read(path).get("reviewer", "")).strip()
+
+
+def load(path: Path, known_ids: set[str]) -> list[Review]:
+    """Read the file. Raises ReviewError listing every problem found."""
+    data = _read(path)
     problems, reviews, seen = [], [], set()
     for entry in data.get("review", []):
         rid = str(entry.get("id", ""))

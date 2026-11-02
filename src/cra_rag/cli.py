@@ -296,6 +296,7 @@ def _agreement(args: argparse.Namespace) -> int:
         print(f"No answer has both your verdict and the judge's yet ({args.review}).")
     else:
         judge_model = next(iter(judgments.values()))["judge"]
+        print(f"Reviewer: {review.reviewer(args.review) or 'not named in the file'}")
         print(f"{result.count} answers with your verdict and the verdict of {judge_model}.")
         print(f"Agreement: {result.agreed}/{result.count} ({result.rate:.0%})")
         print(f"Cohen's kappa: {result.kappa:.2f} (1 = perfect, 0 = no better than chance)")
