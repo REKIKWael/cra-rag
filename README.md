@@ -21,9 +21,9 @@ API and evaluation running in CI.
 ## Design principles
 
 - **Every answer cites its sources** (article, annex). No source, no answer.
-- **Quality is measured, not assumed.** A set of 40 reference questions, reviewed
-  by a practitioner of product cybersecurity regulation, is checked in CI and will
-  score retrieval and answers. See [`eval/questions.toml`](eval/questions.toml).
+- **Quality is measured, not assumed.** 40 reference questions in French and
+  English, each with a reference answer and the sections that answer it, score the
+  retrieval and the answers. See [`eval/questions.toml`](eval/questions.toml).
 - **Reproducible.** The texts are downloaded by script and committed with their
   SHA-256 checksums, so every result can be traced to an exact version.
 - **Local and free.** The models run on the machine with [Ollama](https://ollama.com):
