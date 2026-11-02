@@ -210,13 +210,14 @@ def _eval_answers(args: argparse.Namespace) -> int:
     searcher = _open_retriever(args.raw, [method])
     if searcher is None:
         return 1
-    model = llm.OllamaLLM(model=args.model)
-    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model)
-    print(f"{len(question_set)} questions, {method} search, {args.model}.")
+    context = agent.CONTEXT_TOKENS if args.mode == "agent" else 8192
+    model = llm.OllamaLLM(model=args.model, context_tokens=context)
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model, args.mode)
+    print(f"{len(question_set)} questions, {args.mode} mode, {method} search, {args.model}.")
     print("Answers already saved with the same settings are reused: interrupt any time.")
     try:
         records = answer_eval.run(
-            question_set, searcher, model, method, args.passages, path, log=print
+            question_set, searcher, model, method, args.passages, path, log=print, mode=args.mode
         )
     except (embed.EmbeddingError, llm.LLMError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -245,11 +246,14 @@ def _eval_answers(args: argparse.Namespace) -> int:
     return 0
 
 
-def _saved_answers(question_set: list[questions.Question], model: str) -> tuple[Path, list[dict]]:
-    """The answers saved by eval-answers for this model (an empty list if there are none)."""
-    path = answer_eval.results_path(answer_eval.RESULTS_DIR, model)
+def _saved_answers(
+    question_set: list[questions.Question], model: str, mode: str = "rag"
+) -> tuple[Path, list[dict]]:
+    """The answers saved by eval-answers for this model and mode (empty if there are none)."""
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, model, mode)
     if not path.exists():
-        print(f"Error: no answers in {path}. Run: uv run cra-rag eval-answers", file=sys.stderr)
+        run = "uv run cra-rag eval-answers" + ("" if mode == "rag" else f" --mode {mode}")
+        print(f"Error: no answers in {path}. Run: {run}", file=sys.stderr)
         return path, []
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     in_set = {q.id for q in question_set}
@@ -258,7 +262,7 @@ def _saved_answers(question_set: list[questions.Question], model: str) -> tuple[
 
 def _judge(args: argparse.Namespace) -> int:
     question_set = questions.load(args.file)
-    path, records = _saved_answers(question_set, args.answers_model)
+    path, records = _saved_answers(question_set, args.answers_model, args.mode)
     if not records:
         return 1
     # A verdict needs about 1,000 tokens of context: a smaller window saves memory.
@@ -483,7 +487,7 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("question")
     cmd.add_argument(
         "--mode",
-        choices=["rag", "agent"],
+        choices=answer_eval.MODES,
         default="rag",
         help="rag: one search, then the answer; agent: the model searches by itself",
     )
@@ -498,6 +502,7 @@ def main(argv: list[str] | None = None) -> int:
         "eval-answers", help="answer the reference questions and check the answers"
     )
     cmd.add_argument("--only", help="comma-separated question ids, e.g. q001,q008")
+    cmd.add_argument("--mode", choices=answer_eval.MODES, default="rag")
     cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
     cmd.add_argument("--passages", type=int, default=8)
     cmd.add_argument("--model", default=llm.CHAT_MODEL)
@@ -508,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
     cmd = commands.add_parser("judge", help="judge the saved answers with a larger model")
     cmd.add_argument("--judge-model", default=judge.JUDGE_MODEL)
     cmd.add_argument("--answers-model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--mode", choices=answer_eval.MODES, default="rag", help="whose answers")
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.set_defaults(handler=_judge)
 

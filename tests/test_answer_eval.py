@@ -1,11 +1,12 @@
 """Tests for the evaluation of answers, with a fake model (no Ollama needed)."""
 
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
-from cra_rag import answer_eval, judge, llm, questions, retriever
+from cra_rag import answer, answer_eval, judge, llm, questions, retriever
 
 ROOT = Path(__file__).parent.parent
 
@@ -131,3 +132,46 @@ def test_each_mode_has_its_own_results_file():
     assert rag.name == "answers-ministral-3_3b.jsonl"  # unchanged: saved results stay valid
     assert agent.name == "answers-agent-ministral-3_3b.jsonl"
     assert judge.judgments_path(agent).name == "judgments-agent-ministral-3_3b.jsonl"
+
+
+def test_the_rag_fingerprint_is_the_one_of_step_5():
+    # Adding the agent mode must not invalidate the RAG answers saved before it.
+    old = json.dumps(["m", "hybrid", 8, answer.PROMPT_VERSION, answer.SYSTEM_PROMPT])
+    expected = hashlib.sha256(old.encode()).hexdigest()[:12]
+    assert answer_eval.settings_fingerprint("m", "hybrid", 8) == expected
+    assert answer_eval.settings_fingerprint("m", "hybrid", 8, mode="agent") != expected
+
+
+class ScriptedAgent:
+    model = "scripted"
+
+    def __init__(self):
+        self.turn = 0
+
+    def chat(self, system, user, on_token=None):
+        raise AssertionError("the agent must use converse")
+
+    def converse(self, messages, tools=None, on_token=None):
+        self.turn += 1
+        if self.turn % 2:  # odd turns ask for a search, even turns answer
+            call = llm.ToolCall("search", {"query": "délai de notification"})
+            return llm.Completion(text="", tool_calls=(call,), prompt_seconds=1.0)
+        return llm.Completion(text="Au plus tard 24 heures [cra:art_14].", output_seconds=2.0)
+
+
+def test_the_agent_mode_saves_the_tools_it_ran(tmp_path, bm25_only):
+    path = tmp_path / "answers-agent.jsonl"
+    records = answer_eval.run(
+        [question("q001")], bm25_only, ScriptedAgent(), "bm25", 8, path, mode="agent"
+    )
+    record = records[0]
+    assert record["mode"] == "agent"
+    assert record["steps"][0]["tool"] == "search"
+    assert "cra:art_14" in record["steps"][0]["found"]
+    assert record["seconds"] == 3.0  # every turn of the agent counts
+
+    report = tmp_path / "answers-agent.md"
+    answer_eval.write_report([question("q001")], records, report)
+    text = report.read_text(encoding="utf-8")
+    assert "(agent with tools, bm25 search)" in text
+    assert "Tools: search(délai de notification)" in text
