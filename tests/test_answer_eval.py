@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cra_rag import answer_eval, llm, questions, retriever
+from cra_rag import answer_eval, judge, llm, questions, retriever
 
 ROOT = Path(__file__).parent.parent
 
@@ -123,3 +123,11 @@ def test_the_report_shows_scores_and_every_answer(tmp_path, bm25_only):
     assert "| Says when the texts do not answer (out of scope) | 1/1 (100%) |" in text
     assert "| Answers (no false refusal) | 0/1 (0%) |" in text
     assert "## q001 · lookup · fr · TO CHECK" in text
+
+
+def test_each_mode_has_its_own_results_file():
+    rag = answer_eval.results_path(Path("eval/results"), "ministral-3:3b")
+    agent = answer_eval.results_path(Path("eval/results"), "ministral-3:3b", mode="agent")
+    assert rag.name == "answers-ministral-3_3b.jsonl"  # unchanged: saved results stay valid
+    assert agent.name == "answers-agent-ministral-3_3b.jsonl"
+    assert judge.judgments_path(agent).name == "judgments-agent-ministral-3_3b.jsonl"

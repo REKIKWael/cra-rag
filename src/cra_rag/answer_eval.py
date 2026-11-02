@@ -43,8 +43,12 @@ def settings_fingerprint(model: str, method: str, passages: int) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:12]
 
 
-def results_path(results_dir: Path, model: str) -> Path:
-    return results_dir / f"answers-{re.sub(r'[^A-Za-z0-9._-]', '_', model)}.jsonl"
+def results_path(results_dir: Path, model: str, mode: str = "rag") -> Path:
+    """answers-<model>.jsonl for the RAG pipeline (the original name, so the saved
+    results stay valid), answers-<mode>-<model>.jsonl for another mode such as the
+    agent: two modes never overwrite each other's answers, even with the same model."""
+    prefix = "answers-" if mode == "rag" else f"answers-{mode}-"
+    return results_dir / f"{prefix}{re.sub(r'[^A-Za-z0-9._-]', '_', model)}.jsonl"
 
 
 def key_figures(text: str) -> set[str]:

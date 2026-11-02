@@ -144,3 +144,42 @@ def test_ollama_chat_explains_how_to_install_a_missing_model():
     client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404)))
     with pytest.raises(llm.LLMError, match="ollama pull ministral-3:3b"):
         llm.OllamaLLM(client=client).chat("system", "user")
+
+
+def test_ollama_converse_returns_the_tools_the_model_asks_for():
+    seen = {}
+
+    def fake_ollama(request):
+        seen.update(json.loads(request.content))
+        lines = [
+            {"message": {"content": "", "tool_calls": [
+                {"function": {"name": "search", "arguments": {"query": "délai de signalement"}}},
+                {"function": {"name": "read_section", "arguments": '{"id": "cra:art_14"}'}},
+            ]}, "done": False},
+            {"message": {"content": ""}, "done": True, "eval_count": 30},
+        ]  # fmt: skip
+        body = "\n".join(json.dumps(line) for line in lines) + "\n"
+        return httpx.Response(200, content=body.encode())
+
+    client = httpx.Client(transport=httpx.MockTransport(fake_ollama))
+    tools = [{"type": "function", "function": {"name": "search", "parameters": {}}}]
+    messages = [{"role": "user", "content": "Quels délais ?"}]
+    completion = llm.OllamaLLM(client=client).converse(messages, tools=tools)
+
+    assert seen["tools"] == tools and seen["messages"] == messages
+    assert completion.tool_calls == (
+        llm.ToolCall("search", {"query": "délai de signalement"}),
+        llm.ToolCall("read_section", {"id": "cra:art_14"}),  # JSON text is read too
+    )
+
+
+def test_a_plain_chat_sends_no_tools():
+    seen = {}
+
+    def fake_ollama(request):
+        seen.update(json.loads(request.content))
+        return fake_ollama_stream(request)
+
+    client = httpx.Client(transport=httpx.MockTransport(fake_ollama))
+    completion = llm.OllamaLLM(client=client).chat("system", "user")
+    assert "tools" not in seen and completion.tool_calls == ()
