@@ -8,6 +8,7 @@ from collections import Counter
 from pathlib import Path
 
 from cra_rag import (
+    agent,
     answer,
     answer_eval,
     chunks,
@@ -156,18 +157,20 @@ def _ask(args: argparse.Namespace) -> int:
     if searcher is None:
         return 1
     lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
-    model = llm.OllamaLLM(model=args.model)
-    print(f"Searching with {method}, then writing the answer with {args.model}...\n")
+    show = lambda piece: print(piece, end="", flush=True)  # noqa: E731
     try:
-        result = answer.answer(
-            args.question,
-            lang,
-            searcher,
-            model,
-            method=method,
-            passages=args.passages,
-            on_token=lambda piece: print(piece, end="", flush=True),
-        )
+        if args.mode == "agent":
+            model = llm.OllamaLLM(model=args.model, context_tokens=agent.CONTEXT_TOKENS)
+            print(f"Agent {args.model}: it searches the texts itself ({method} search)...\n")
+            result = agent.run(
+                args.question, lang, searcher, model, method, on_token=show, on_step=_show_step
+            )
+        else:
+            model = llm.OllamaLLM(model=args.model)
+            print(f"Searching with {method}, then writing the answer with {args.model}...\n")
+            result = answer.answer(
+                args.question, lang, searcher, model, method, args.passages, on_token=show
+            )
     except (embed.EmbeddingError, llm.LLMError) as exc:
         print(f"\nError: {exc}", file=sys.stderr)
         return 1
@@ -187,6 +190,13 @@ def _ask(args: argparse.Namespace) -> int:
         f"wrote {c.output_tokens} tokens in {c.output_seconds:.0f} s."
     )
     return 0
+
+
+def _show_step(step: agent.Step) -> None:
+    """Print a tool the agent ran, as it runs it."""
+    arguments = ", ".join(f"{name}={value!r}" for name, value in step.arguments.items())
+    found = ", ".join(step.found) or "nothing"
+    print(f"  -> {step.tool}({arguments}): {found}", flush=True)
 
 
 def _eval_answers(args: argparse.Namespace) -> int:
@@ -471,6 +481,12 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd = commands.add_parser("ask", help='answer a question with citations: ask "..."')
     cmd.add_argument("question")
+    cmd.add_argument(
+        "--mode",
+        choices=["rag", "agent"],
+        default="rag",
+        help="rag: one search, then the answer; agent: the model searches by itself",
+    )
     cmd.add_argument("--lang", choices=["auto", *questions.LANGS], default="auto")
     cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
     cmd.add_argument("--passages", type=int, default=8, help="passages given to the model")
