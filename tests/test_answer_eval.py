@@ -166,12 +166,12 @@ def test_the_agent_mode_saves_the_tools_it_ran(tmp_path, bm25_only):
     )
     record = records[0]
     assert record["mode"] == "agent"
-    assert record["steps"][0]["tool"] == "search"
-    assert "cra:art_14" in record["steps"][0]["found"]
+    assert [s["tool"] for s in record["steps"]] == ["search", "search"]  # question, then model
+    assert "cra:art_14" in record["steps"][1]["found"]
     assert record["seconds"] == 3.0  # every turn of the agent counts
 
     report = tmp_path / "answers-agent.md"
     answer_eval.write_report([question("q001")], records, report)
     text = report.read_text(encoding="utf-8")
     assert "(agent with tools, bm25 search)" in text
-    assert "Tools: search(délai de notification)" in text
+    assert "Tools: search(Question q001 sur les délais de signalement ?) → search(délai" in text

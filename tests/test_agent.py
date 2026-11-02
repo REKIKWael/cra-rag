@@ -55,30 +55,30 @@ def test_the_agent_searches_reads_then_answers_with_checked_citations(bm25_only)
     )
     result = run(model, bm25_only)
 
-    assert [s.tool for s in result.steps] == ["search", "read_section"]
-    assert "cra:art_14" in result.steps[0].found
+    # First the search with the whole question, then the model's own choices.
+    assert [s.tool for s in result.steps] == ["search", "search", "read_section"]
+    assert "cra:art_14" in result.steps[1].found
     assert result.citations == ("cra:art_14",)
     assert result.unsupported_citations == ()
     assert "cra:art_14" in [s.id for s in result.sources]
     # The tool results went back to the model, named, before its answer.
     last_messages, tools = model.calls[-1]
     tool_messages = [m for m in last_messages if m["role"] == "tool"]
-    assert [m["tool_name"] for m in tool_messages] == ["search", "read_section"]
-    assert "[cra:art_14]" in tool_messages[1]["content"]
+    assert [m["tool_name"] for m in tool_messages] == ["search", "search", "read_section"]
+    assert "[cra:art_14]" in tool_messages[2]["content"]
     assert tools == agent.TOOLS
 
 
-def test_an_answer_given_without_searching_is_sent_back_once(bm25_only):
-    model = ScriptedLLM(
-        says("De mémoire : 24 heures."),
-        asks(("search", {"query": "délai alerte précoce"})),
-        says("Au plus tard 24 heures [cra:art_14]."),
-    )
-    result = run(model, bm25_only)
+def test_the_first_search_uses_the_whole_question(bm25_only):
+    question = "Quels délais pour signaler une faille exploitée ?"
+    model = ScriptedLLM(says("Au plus tard 24 heures [cra:art_14]."))
+    result = run(model, bm25_only, question)
 
-    assert model.calls[1][0][-1] == {"role": "user", "content": agent.SEARCH_FIRST}
-    assert result.text == "Au plus tard 24 heures [cra:art_14]."
-    assert len(result.steps) == 1
+    assert result.steps[0].arguments == {"query": question}
+    first_messages, _ = model.calls[0]
+    assert first_messages[2]["tool_calls"][0]["function"]["arguments"] == {"query": question}
+    assert first_messages[3]["role"] == "tool"  # its passages, before the model's first turn
+    assert len(model.calls) == 1 and result.text == "Au plus tard 24 heures [cra:art_14]."
 
 
 def test_a_model_that_keeps_searching_must_answer_at_the_last_turn(bm25_only):
@@ -90,7 +90,7 @@ def test_a_model_that_keeps_searching_must_answer_at_the_last_turn(bm25_only):
     assert last_tools is None  # no tools offered: it has to answer
     assert last_messages[-1] == {"role": "user", "content": agent.ANSWER_NOW}
     assert len(model.calls) == agent.MAX_TURNS
-    assert len(result.steps) == agent.MAX_TURNS - 1
+    assert len(result.steps) == agent.MAX_TURNS  # the first search, then one per turn
 
 
 def test_a_citation_of_a_section_no_tool_returned_is_flagged(bm25_only):

@@ -12,6 +12,16 @@ The model only asks for a tool; this program runs it and sends the result back.
 The answer is checked as in the RAG pipeline: a citation counts only if a tool
 returned that section, so the agent cannot cite what it has not read. A limit on
 the number of turns stops a model that would search forever.
+
+Version 2, after measuring version 1 on the 40 reference questions (8 answers
+judged correct, against 17 for the RAG pipeline):
+- the first search is made with the user's whole question, as in the RAG pipeline,
+  before the model takes over: version 1 searched with its own shorter queries,
+  lost words that mattered, and never read a whole section;
+- the model must not add the names of the texts (CRA, RED) to its queries: both
+  are always searched, and those words pulled the search off target;
+- a question on another law, another country or a standard gets the refusal
+  sentence alone: version 1 refused, then added what the CRA says anyway.
 """
 
 from collections.abc import Callable
@@ -22,7 +32,7 @@ from cra_rag.answer import Answer, Source
 from cra_rag.llm import Completion, ToolCall, ToolLLM
 from cra_rag.retriever import Retriever
 
-AGENT_VERSION = 1  # change it whenever the prompt, the tools or the limits change
+AGENT_VERSION = 2  # change it whenever the prompt, the tools or the limits change
 MAX_TURNS = 5  # model replies; the last one gets no tools, so it must answer
 SEARCH_PASSAGES = 6  # passages returned by one search
 SECTION_CHARS = 6000  # a whole article can be long: cut to keep the context small
@@ -36,27 +46,31 @@ You have two tools:
 - read_section: gives the full text of one section from its id, for example cra:art_14.
 
 Method:
-1. Always search before answering. Use the words of the regulation in your queries.
-2. If the passages do not answer, search again with other words, or read the full section.
+1. A first search with the question has already been made: read its passages first. If \
+they answer the question, answer at once.
+2. If they do not, search again with other words, ideally the words of the regulation, or \
+read the full section of a passage that looks relevant. Never add the names of the texts \
+(CRA, RED) to a query: both texts are always searched.
 3. Use only what the tools returned. Never use outside knowledge: no law, deadline, amount \
 or figure that the tools did not return.
 4. Cite the source of each statement with its id in square brackets, for example [cra:art_14].
-5. If the texts do not deal with the question, reply only with this sentence, in the \
-language of the question:
+5. If the question is about another law (NIS2, GDPR...), another country, a standard \
+(EN 18031...) or anything the texts do not deal with, reply only with this sentence, in the \
+language of the question, and add nothing about what the texts say on other subjects:
    French: "{answer.REFUSALS["fr"]}"
    English: "{answer.REFUSALS["en"]}"
-   If they answer part of it, answer that part and say what is missing.
-6. Answer in the language of the question, in plain sentences, 120 words at most."""
+6. If the texts answer only part of the question, answer that part and say what is missing.
+7. Start with the direct answer. Answer in the language of the question, in plain \
+sentences without headings or lists, 120 words at most."""
 
 REMINDERS = {
-    "fr": "Cherche dans les textes avec l'outil search avant de répondre. Réponds en français, "
-    "uniquement à partir des résultats des outils, en citant chaque affirmation avec "
-    "l'identifiant de sa source entre crochets, par exemple [cra:art_14].",
-    "en": "Search the texts with the search tool before answering. Answer in English, only "
-    "from what the tools returned, citing each statement with the id of its source in "
-    "square brackets, for example [cra:art_14].",
+    "fr": "Réponds en français, uniquement à partir des résultats des outils, en citant "
+    "chaque affirmation avec l'identifiant de sa source entre crochets, par exemple "
+    "[cra:art_14]. Cherche encore seulement si les passages ne suffisent pas.",
+    "en": "Answer in English, only from what the tools returned, citing each statement with "
+    "the id of its source in square brackets, for example [cra:art_14]. Search again only "
+    "if the passages are not enough.",
 }
-SEARCH_FIRST = "Search the texts with the search tool before answering."
 ANSWER_NOW = (
     "No more tools. Answer now from what the tools returned, citing the ids, "
     "or reply with the refusal sentence."
@@ -186,8 +200,31 @@ def run(
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": f"Question: {question}\n\n{REMINDERS[lang]}"},
     ]
-    completions: list[Completion] = []
     steps: list[Step] = []
+
+    def run_tools(calls: tuple[ToolCall, ...], text: str = "") -> None:
+        """Run the calls, and record them in the conversation as the model's own."""
+        messages.append(
+            {
+                "role": "assistant",
+                "content": text,
+                "tool_calls": [
+                    {"function": {"name": c.name, "arguments": c.arguments}} for c in calls
+                ],
+            }
+        )
+        for call in calls:
+            result, found = tools.run(call)
+            step = Step(call.name, dict(call.arguments), found)
+            steps.append(step)
+            if on_step:
+                on_step(step)
+            messages.append({"role": "tool", "tool_name": call.name, "content": result})
+
+    # The first search uses the whole question, as the RAG pipeline does; the model
+    # then decides whether to search again, read a section, or answer.
+    run_tools((ToolCall("search", {"query": question}),))
+    completions: list[Completion] = []
     text = ""
     for turn in range(1, MAX_TURNS + 1):
         last = turn == MAX_TURNS
@@ -196,31 +233,9 @@ def run(
         completion = llm.converse(messages, tools=None if last else TOOLS, on_token=on_token)
         completions.append(completion)
         if last or not completion.tool_calls:
-            if not steps and not last:  # answered from memory: send it to search first
-                messages += [
-                    {"role": "assistant", "content": completion.text},
-                    {"role": "user", "content": SEARCH_FIRST},
-                ]
-                continue
             text = completion.text
             break
-        messages.append(
-            {
-                "role": "assistant",
-                "content": completion.text,
-                "tool_calls": [
-                    {"function": {"name": c.name, "arguments": c.arguments}}
-                    for c in completion.tool_calls
-                ],
-            }
-        )
-        for call in completion.tool_calls:
-            result, found = tools.run(call)
-            step = Step(call.name, dict(call.arguments), found)
-            steps.append(step)
-            if on_step:
-                on_step(step)
-            messages.append({"role": "tool", "tool_name": call.name, "content": result})
+        run_tools(completion.tool_calls, completion.text)
 
     return AgentAnswer(
         question=question,
