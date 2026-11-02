@@ -22,6 +22,7 @@ from cra_rag import (
     questions,
     retriever,
     review,
+    router,
     search,
 )
 
@@ -150,13 +151,17 @@ def _search(args: argparse.Namespace) -> int:
 
 
 def _ask(args: argparse.Namespace) -> int:
+    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
+    if router.is_about_assistant(args.question):
+        print(router.ABOUT[lang])
+        print("\n(A question about the assistant: fixed presentation, no search, no model.)")
+        return 0
     method = args.method
     if method == "auto":
         method = "hybrid" if (dense.INDEX_DIR / "qdrant").exists() else "bm25"
     searcher = _open_retriever(args.raw, [method])
     if searcher is None:
         return 1
-    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
     show = lambda piece: print(piece, end="", flush=True)  # noqa: E731
     try:
         if args.mode == "agent":

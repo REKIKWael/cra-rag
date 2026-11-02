@@ -17,7 +17,7 @@ the number of turns stops a model that would search forever.
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from cra_rag import answer
+from cra_rag import answer, router
 from cra_rag.answer import Answer, Source
 from cra_rag.llm import Completion, ToolCall, ToolLLM
 from cra_rag.retriever import Retriever
@@ -176,6 +176,11 @@ def run(
     on_token: Callable[[str], None] | None = None,
     on_step: Callable[[Step], None] | None = None,
 ) -> AgentAnswer:
+    if router.is_about_assistant(question):  # same presentation as the RAG pipeline
+        text = router.ABOUT[lang]
+        if on_token:
+            on_token(text)
+        return AgentAnswer(question, lang, text, (), Completion(text=text), route="about")
     tools = Tools(retriever, lang, method)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},

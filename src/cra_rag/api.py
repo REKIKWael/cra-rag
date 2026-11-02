@@ -23,7 +23,7 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from cra_rag import __version__, answer, dense, embed, llm, retriever, search
+from cra_rag import __version__, answer, dense, embed, llm, retriever, router, search
 
 Lang = Literal["auto", "fr", "en"]
 Method = Literal["auto", "bm25", "dense", "hybrid"]
@@ -108,6 +108,10 @@ class AskResponse(BaseModel):
     unsupported_citations: list[str] = Field(description="ids cited but never given: distrust")
     sources: list[Section] = Field(description="every source given to the model")
     timings: Timings
+    route: str = Field(
+        default="regulation",
+        description='"about": a question about the assistant, answered with a fixed text',
+    )
 
 
 # --- The application ---------------------------------------------------------------
@@ -210,6 +214,15 @@ def create_app(settings: Settings | None = None, model: llm.LLM | None = None) -
     def ask(request: AskRequest) -> AskResponse:
         method, lang = resolve(request.method, request.lang, request.question)
         s = current()
+        if router.is_about_assistant(request.question):
+            text = router.ABOUT[lang]
+            return AskResponse(
+                question=request.question, lang=lang, method=method, model=s.model.model,
+                answer=text, refusal=False, citations=[], unsupported_citations=[], sources=[],
+                timings=Timings(prompt_tokens=0, prompt_seconds=0, output_tokens=0,
+                                output_seconds=0),
+                route="about",
+            )  # fmt: skip
         try:
             with s.lock:
                 sources = answer.find_sources(

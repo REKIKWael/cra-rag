@@ -22,6 +22,10 @@ API and evaluation running in CI.
 ## Design principles
 
 - **Every answer cites its sources** (article, annex). No source, no answer.
+- **Questions about the assistant itself** ("who are you?", "what can you do?") are
+  recognised before any search and get a fixed presentation (intent routing,
+  [`router.py`](src/cra_rag/router.py)). A test checks that none of the reference
+  questions is caught by mistake.
 - **Quality is measured, not assumed.** 40 reference questions in French and
   English, each with a reference answer and the sections that answer it, score the
   retrieval and the answers. See [`eval/questions.toml`](eval/questions.toml).

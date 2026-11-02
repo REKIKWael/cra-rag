@@ -82,3 +82,12 @@ def test_ask_reports_an_unavailable_model_as_503(tmp_path):
         response = failing.post("/ask", json={"question": "Quels délais de signalement ?"})
     assert response.status_code == 503
     assert "Ollama" in response.json()["detail"]
+
+
+def test_a_question_about_the_assistant_gets_the_presentation(client):
+    response = client.post("/ask", json={"question": "Qui es-tu et que sais-tu faire ?"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["route"] == "about"
+    assert body["answer"].startswith("Je suis cra-rag")
+    assert body["sources"] == [] and body["refusal"] is False
