@@ -20,6 +20,7 @@ from cra_rag import (
     parse,
     questions,
     retriever,
+    review,
     search,
 )
 
@@ -234,15 +235,22 @@ def _eval_answers(args: argparse.Namespace) -> int:
     return 0
 
 
-def _judge(args: argparse.Namespace) -> int:
-    question_set = questions.load(args.file)
-    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.answers_model)
+def _saved_answers(question_set: list[questions.Question], model: str) -> tuple[Path, list[dict]]:
+    """The answers saved by eval-answers for this model (an empty list if there are none)."""
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, model)
     if not path.exists():
         print(f"Error: no answers in {path}. Run: uv run cra-rag eval-answers", file=sys.stderr)
-        return 1
+        return path, []
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     in_set = {q.id for q in question_set}
-    records = [r for r in records if r["id"] in in_set]
+    return path, [r for r in records if r["id"] in in_set]
+
+
+def _judge(args: argparse.Namespace) -> int:
+    question_set = questions.load(args.file)
+    path, records = _saved_answers(question_set, args.answers_model)
+    if not records:
+        return 1
     # A verdict needs about 1,000 tokens of context: a smaller window saves memory.
     judge_llm = llm.OllamaLLM(model=args.judge_model, max_output_tokens=250, context_tokens=4096)
     print(f"Judging {len(records)} answers of {args.answers_model} with {args.judge_model}.")
@@ -264,6 +272,47 @@ def _judge(args: argparse.Namespace) -> int:
         unreadable = f", unreadable {counts['unreadable']}" if counts["unreadable"] else ""
         print(f"  {group:<13} {total:>2} questions: {detail}{unreadable}")
     print(f"\nEvery verdict with its reason: {report}")
+    return 0
+
+
+def _agreement(args: argparse.Namespace) -> int:
+    question_set = questions.load(args.file)
+    if not args.review.exists():
+        review.write_template(question_set, args.review)
+        print(f"Created {args.review}: write your verdict on each answer, then run this again.")
+        return 0
+    try:
+        reviews = review.load(args.review, {q.id for q in question_set})
+    except review.ReviewError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    path, records = _saved_answers(question_set, args.answers_model)
+    if not records:
+        return 1
+    judgments = judge.still_valid(question_set, records, judge.judgments_path(path))
+    result = review.compare(reviews, judgments)
+    to_fix = [r for r in reviews if not r.reference_ok]
+    if not result.count:
+        print(f"No answer has both your verdict and the judge's yet ({args.review}).")
+    else:
+        judge_model = next(iter(judgments.values()))["judge"]
+        print(f"{result.count} answers with your verdict and the verdict of {judge_model}.")
+        print(f"Agreement: {result.agreed}/{result.count} ({result.rate:.0%})")
+        print(f"Cohen's kappa: {result.kappa:.2f} (1 = perfect, 0 = no better than chance)")
+        matrix, corner = result.matrix(), "you/judge"
+        print(f"\n{corner:<12}" + "".join(f"{v:>11}" for v in judge.VERDICTS))
+        for expert in judge.VERDICTS:
+            row = "".join(f"{matrix[(expert, judged)]:>11}" for judged in judge.VERDICTS)
+            print(f"{expert:<12}{row}")
+        disagreements = result.disagreements()
+        if disagreements:
+            print(f"\nDisagreements ({len(disagreements)}):")
+            for qid, expert, judged in disagreements:
+                print(f"  {qid}  you: {expert:<9} judge: {judged:<9} {judgments[qid]['reason']}")
+    if to_fix:
+        print(f"\nReference answers to fix ({len(to_fix)}):")
+        for r in to_fix:
+            print(f"  {r.id}  {r.note}")
     return 0
 
 
@@ -444,6 +493,14 @@ def main(argv: list[str] | None = None) -> int:
     cmd.add_argument("--answers-model", default=llm.CHAT_MODEL)
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.set_defaults(handler=_judge)
+
+    cmd = commands.add_parser(
+        "agreement", help="compare the judge's verdicts with your own (eval/expert_review.toml)"
+    )
+    cmd.add_argument("--review", type=Path, default=review.REVIEW_FILE)
+    cmd.add_argument("--answers-model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
+    cmd.set_defaults(handler=_agreement)
 
     cmd = commands.add_parser("serve", help="run the HTTP API (documentation at /docs)")
     cmd.add_argument("--host", default="127.0.0.1")

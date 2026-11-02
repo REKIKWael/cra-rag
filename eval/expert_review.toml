@@ -1,0 +1,253 @@
+# Expert review of the answers in eval/results/answers-ministral-3_3b.md
+#
+# For each question, read the question, the reference answer and the model answer,
+# then write your own verdict BEFORE reading the judge's line, so as not to be swayed:
+#   verdict = "correct"    the key facts of the reference answer, nothing contradicting it
+#             "partial"    nothing wrong, but key facts missing
+#             "incorrect"  a contradiction, a false fact, a wrong conclusion,
+#                          or a refusal although the reference answer gives an answer
+#   (out-of-scope questions: "correct" if the answer says the texts do not cover it
+#    and invents nothing, otherwise "incorrect")
+#   reference_ok = false   if the reference answer itself needs fixing (say why in note)
+#
+# Leave verdict empty for an answer not reviewed yet. Then: uv run cra-rag agreement
+
+[[review]]
+id = "q001"  # lookup, fr: On vient de découvrir qu'une faille de notre produit est exploitée par des atta…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q002"  # trap, fr: Le CRA ne s'applique qu'en décembre 2027 : est-ce qu'on a vraiment besoin d'org…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q003"  # multi, fr: Nous éditons un gestionnaire de mots de passe. Peut-on se contenter d'une auto-…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q004"  # lookup, fr: Pendant combien de temps doit-on fournir des correctifs de sécurité pour un pro…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q005"  # lookup, en: What is the maximum fine if our product does not meet the essential cybersecuri…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q006"  # lookup, en: When does a vulnerability count as 'actively exploited' under the CRA?
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q007"  # trap, fr: Depuis quand les exigences de cybersécurité du règlement délégué RED sont-elles…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q008"  # out_of_scope, fr: Quelles exigences de la norme EN 18031-1 portent sur l'authentification ?
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q009"  # lookup, fr: Peut-on livrer notre produit avec les protections désactivées, et laisser le cl…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q010"  # lookup, fr: Qu'est-ce qu'on doit obligatoirement mettre dans la notice de notre produit côt…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q011"  # lookup, en: A market surveillance authority thinks our product is a serious cybersecurity r…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q012"  # lookup, fr: Un laboratoire d'essais veut devenir organisme notifié pour le CRA. Quelles con…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q013"  # multi, fr: Notre produit n'est pas dans la liste des produits importants aujourd'hui. La C…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q014"  # multi, fr: Nous fabriquons des cartes à puce sécurisées. Sont-elles des produits critiques…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q015"  # lookup, fr: On doit rédiger notre déclaration UE de conformité. Quelles informations doit-e…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q016"  # multi, fr: Peut-on mettre une version courte de la déclaration de conformité dans le carto…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q017"  # lookup, en: What do we need to put in our technical documentation file?
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q018"  # lookup, fr: Quelle est la différence entre le module A et le module H pour évaluer la confo…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q019"  # lookup, fr: Nous fabriquons un dispositif médical connecté. Est-ce qu'il est concerné par l…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q020"  # lookup, en: We import connected cameras made outside the EU. What do we have to check befor…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q021"  # lookup, fr: On achète des routeurs à un fabricant asiatique et on les vend sous notre propr…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q022"  # lookup, fr: Notre objet connecté dépend d'un serveur cloud que nous développons nous-mêmes.…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q023"  # lookup, fr: Peut-on faire payer les mises à jour de sécurité à nos clients, par exemple dan…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q024"  # lookup, en: Can we wait and ship our security fixes together with the next feature release?
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q025"  # lookup, fr: On a trouvé une faille dans une bibliothèque open source que notre produit intè…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q026"  # lookup, fr: Est-ce qu'on doit dire à l'acheteur jusqu'à quand le produit recevra des mises …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q027"  # lookup, en: What fine do we risk if we give incomplete or misleading information to a marke…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q028"  # lookup, fr: Peut-on montrer un prototype pas encore conforme sur un salon, ou diffuser une …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q029"  # lookup, fr: Nos équipements sont développés uniquement pour les forces armées. Le CRA s'app…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q030"  # lookup, en: Our product is pure software, there is nothing physical to stick a label on. Wh…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q031"  # lookup, fr: Une faille qui n'est pas exploitée, ou un incident évité de justesse : peut-on …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q032"  # multi, fr: Un intégrateur modifie le firmware d'une caméra déjà vendue pour l'utiliser aut…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q033"  # multi, en: A non-profit foundation maintains an open-source library that companies use in …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q034"  # multi, fr: Nous sommes une petite entreprise de 20 personnes. Le CRA prévoit-il des allège…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q035"  # multi, en: We make firewalls. How are they classified, and can we assess conformity oursel…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q036"  # trap, fr: Les produits qu'on a vendus avant décembre 2027 échappent complètement au CRA, …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q037"  # trap, fr: Le CRA nous oblige-t-il à publier la SBOM de nos produits ?
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q038"  # out_of_scope, en: Under NIS2, how quickly must an essential entity notify a significant incident …
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q039"  # out_of_scope, fr: Au Royaume-Uni, quelles règles de cybersécurité s'appliquent à nos objets conne…
+verdict = ""
+reference_ok = true
+note = ""
+
+[[review]]
+id = "q040"  # out_of_scope, fr: Concrètement, à quel organisme français doit-on envoyer nos notifications de vu…
+verdict = ""
+reference_ok = true
+note = ""
