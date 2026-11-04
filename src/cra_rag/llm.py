@@ -78,7 +78,9 @@ class OllamaLLM:
         self.url = url.rstrip("/")
         self.client = client or httpx.Client(timeout=900.0, trust_env=False)
         self.options = {
-            "temperature": 0,  # same question, same answer: needed to evaluate
+            # As repeatable as possible, which evaluation needs. Not fully: from one
+            # machine to another, answers can still differ (see "Agent mode" in the README).
+            "temperature": 0,
             "seed": 0,
             "num_predict": max_output_tokens,
             "num_ctx": context_tokens,
