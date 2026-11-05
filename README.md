@@ -16,8 +16,8 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API, evaluation running in CI, and security checks that block a pull request.
 
-> **Status:** steps 1 to 9 are done, step 10 (integrations) is in progress. The review
-> of the judge's verdicts awaits the domain expert's confirmation (see
+> **Status:** steps 1 to 9 are done, step 10 (integrations) is in progress. The domain
+> expert has decided the answers on which the judge and the first review disagreed (see
 > [Evaluation in CI](#evaluation-in-ci)).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
@@ -245,29 +245,32 @@ Evaluate workflow (every verdict and its reason are in
 | out of scope (4) | 3 | 0 | 1 |
 
 A judge is a model too. To know how far its verdicts can be trusted, every
-answer was also reviewed by hand in [`eval/expert_review.toml`](eval/expert_review.toml),
-and `uv run cra-rag agreement` compares the two. This first review was made by
-Claude (an AI assistant), checking each answer against the text of the
-regulation; the domain expert's confirmation is pending.
+answer was also reviewed in [`eval/expert_review.toml`](eval/expert_review.toml),
+and `uv run cra-rag agreement` compares the two. A first review of the 40 answers
+was made by Claude (an AI assistant), checking each answer against the text of the
+regulation. The 12 answers on which it disagreed with the judge were then decided
+by the domain expert, who sided with the first review 10 times and with the judge
+twice (`by = "expert"` in the file). The 28 answers on which the judge and the
+first review agreed were not checked again, so the agreement below may overstate it.
 
 | Judge against the review | 40 answers |
 |---|---|
-| Same verdict | 28 (70 %) |
-| Cohen's kappa (agreement corrected for chance) | 0.55 |
+| Same verdict | 30 (75 %) |
+| Cohen's kappa (agreement corrected for chance) | 0.62 |
 
-What the 12 disagreements show:
+What the 10 remaining disagreements show:
 
-- **Totals hide the errors.** The review counts 14 correct, 14 partial and 12
-  incorrect, close to the judge's totals, yet the two disagree on 12 answers,
-  6 in each direction.
+- **Totals hide the errors.** The review counts 15 correct, 12 partial and 13
+  incorrect, close to the judge's 17, 8 and 15, yet the two disagree on 10 answers,
+  5 in each direction.
 - **Too harsh when the judge trusts its own memory.** It rejected true
   statements, claiming that Article 13(20) does not exist (q020), that the CRA
   requires no coordinated vulnerability disclosure policy (q025), or that ENISA
   receives no notifications (q040), although its instructions forbid using its
   own knowledge of the law.
 - **Too lenient with long or hedged answers.** It saw items that are not there
-  (q015, q017), accepted a refusal although the texts answer (q037), and missed
-  a wrong conclusion (q036).
+  (q017), accepted a refusal although the texts answer (q037), and missed a wrong
+  conclusion (q036).
 
 The judge's totals are therefore an indicator, not yet a score to compare models
 with. The next lever: give the judge the passages each answer cites, so that it
