@@ -330,6 +330,19 @@ entity tricks (an "XML bomb" expanding to gigabytes in memory). They are now par
 with [defusedxml](https://pypi.org/project/defusedxml/), and a test checks that such
 a file is refused ([`parse.py`](src/cra_rag/parse.py)).
 
+Its first run on GitHub then found 15 issues in the workflows themselves:
+
+- **Actions referenced by a tag** (`actions/checkout@v7`). A tag can be moved by
+  whoever controls the action's repository, to point at other code; that is how
+  the trivy-action compromise of March 2026 spread a credential stealer through
+  its retagged versions. Every action is now pinned to a full commit SHA, with the
+  version as a comment, and [Dependabot](.github/dependabot.yml) proposes the
+  updates (actions and Python packages) as pull requests that go through these
+  same checks.
+- **"curl | sh"**: the evaluation installed Ollama by piping its install script
+  into a shell. It now downloads the release archive and checks its SHA-256
+  before running anything.
+
 ## Development
 
 ```bash

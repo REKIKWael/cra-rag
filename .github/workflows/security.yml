@@ -27,10 +27,8 @@ jobs:
     name: Code analysis (Semgrep)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: astral-sh/setup-uv@v10.3.0
-
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - name: Semgrep
         # --error: exit with a failure when a rule matches. The corpus (EU texts) and
         # the evaluation results are data, not code.
@@ -43,10 +41,8 @@ jobs:
     name: Dependencies (pip-audit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: astral-sh/setup-uv@v10.3.0
-
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - name: Export the locked versions, with their hashes
         run: uv export --format requirements-txt --frozen --no-emit-project > requirements-audit.txt
 
@@ -58,17 +54,17 @@ jobs:
     name: Docker image (Trivy)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build the image
         run: docker build --tag cra-rag:scan .
 
       - name: Trivy
         # High and critical vulnerabilities that already have a fix fail the job. Those
         # with no fix released yet are skipped: nothing can be done until one exists.
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: cra-rag:scan
+          version: v0.76.2 # the Trivy release itself, pinned too
           format: table
           exit-code: "1"
           ignore-unfixed: true

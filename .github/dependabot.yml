@@ -1,0 +1,15 @@
+# Dependabot opens a pull request when a new version comes out: for the GitHub Actions
+# pinned by commit SHA (it updates the SHA and the version comment) and for the Python
+# packages locked in uv.lock. Each pull request then goes through the CI and the
+# security checks, like any other change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
