@@ -165,13 +165,13 @@ def _ask(args: argparse.Namespace) -> int:
     show = lambda piece: print(piece, end="", flush=True)  # noqa: E731
     try:
         if args.mode == "agent":
-            model = llm.OllamaLLM(model=args.model, context_tokens=agent.CONTEXT_TOKENS)
+            model = llm.connect(args.model, context_tokens=agent.CONTEXT_TOKENS)
             print(f"Agent {args.model}: it searches the texts itself ({method} search)...\n")
             result = agent.run(
                 args.question, lang, searcher, model, method, on_token=show, on_step=_show_step
             )
         else:
-            model = llm.OllamaLLM(model=args.model)
+            model = llm.connect(args.model)
             print(f"Searching with {method}, then writing the answer with {args.model}...\n")
             result = answer.answer(
                 args.question, lang, searcher, model, method, args.passages, on_token=show
@@ -216,7 +216,7 @@ def _eval_answers(args: argparse.Namespace) -> int:
     if searcher is None:
         return 1
     context = agent.CONTEXT_TOKENS if args.mode == "agent" else 8192
-    model = llm.OllamaLLM(model=args.model, context_tokens=context)
+    model = llm.connect(args.model, context_tokens=context)
     path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model, args.mode)
     print(f"{len(question_set)} questions, {args.mode} mode, {method} search, {args.model}.")
     print("Answers already saved with the same settings are reused: interrupt any time.")
@@ -271,7 +271,7 @@ def _judge(args: argparse.Namespace) -> int:
     if not records:
         return 1
     # A verdict needs about 1,000 tokens of context: a smaller window saves memory.
-    judge_llm = llm.OllamaLLM(model=args.judge_model, max_output_tokens=250, context_tokens=4096)
+    judge_llm = llm.connect(args.judge_model, max_output_tokens=250, context_tokens=4096)
     print(f"Judging {len(records)} answers of {args.answers_model} with {args.judge_model}.")
     print("Verdicts already given to the same answers are reused: interrupt any time.")
     try:

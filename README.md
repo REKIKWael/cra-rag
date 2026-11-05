@@ -14,10 +14,11 @@ article it relies on**, so the answer can be checked against the source.
 
 It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
-API and evaluation running in CI.
+API, evaluation running in CI, and security checks that block a pull request.
 
-> **Status:** the 8 steps are done. The judge's verdicts are being confirmed by the
-> domain expert (see [Evaluation in CI](#evaluation-in-ci)).
+> **Status:** steps 1 to 9 are done, step 10 (integrations) is in progress. The review
+> of the judge's verdicts awaits the domain expert's confirmation (see
+> [Evaluation in CI](#evaluation-in-ci)).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
@@ -35,7 +36,11 @@ API and evaluation running in CI.
 - **Local and free.** The models run on the machine with [Ollama](https://ollama.com):
   no API key, no cost, and no document leaves the computer.
 - **Provider-agnostic.** The language model sits behind an interface and can be
-  swapped (hosted API or local model).
+  swapped (hosted API or local model), directly or through a gateway such as
+  [LiteLLM](#integrations).
+- **Checked for vulnerabilities on every change.** Static analysis of the code, an
+  audit of every dependency and a scan of the Docker image run on each pull request,
+  and `main` only accepts changes that pass them (see [Security checks](#security-checks-in-ci)).
 
 ## Corpus and licensing
 
@@ -65,8 +70,12 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 4. Retrieval: BM25, semantic search (bge-m3 + Qdrant) and hybrid fusion, measured with recall@k
 - [x] 5. Generation: cited answers from a local model behind a provider interface, checked on the 40 questions
 - [x] 6. FastAPI service and Docker image, built and smoke-tested in CI
-- [x] 7. End-to-end evaluation in CI, with a judge model checked against a human review
+- [x] 7. End-to-end evaluation in CI, with a judge model checked against a review of every answer
 - [x] 8. An agent that searches with tools, measured against the RAG pipeline (see [Agent mode](#agent-mode))
+- [x] 9. Security checks in CI: Semgrep (SAST), pip-audit and Trivy (SCA), actions pinned by commit SHA,
+  Dependabot (see [Security checks](#security-checks-in-ci))
+- [ ] 10. The usual LLMOps tool chain around it (see [Integrations](#integrations)): LiteLLM gateway (done),
+  OpenAI-compatible endpoint, Open WebUI, n8n, vLLM
 
 ## Usage
 
@@ -315,8 +324,10 @@ the agent.
 
 The [Security workflow](.github/workflows/security.yml) runs on every push to
 `main`, every pull request and every Monday, since a new vulnerability can be
-published for a dependency while the code stays the same. Each job blocks the
-pull request as soon as it finds a problem:
+published for a dependency while the code stays the same. Each job fails as soon
+as it finds a problem, and a ruleset on `main` makes the five checks (these three,
+plus the lint, tests and Docker build of the CI) required: a pull request that fails
+one of them cannot be merged.
 
 | Check | Kind | What it looks at |
 |---|---|---|
@@ -342,6 +353,34 @@ Its first run on GitHub then found 15 issues in the workflows themselves:
 - **"curl | sh"**: the evaluation installed Ollama by piping its install script
   into a shell. It now downloads the release archive and checks its SHA-256
   before running anything.
+
+## Integrations
+
+### LiteLLM: one gateway in front of the models
+
+[LiteLLM](https://docs.litellm.ai/) is a proxy that exposes one OpenAI-compatible
+API in front of many model providers (Ollama, vLLM, OpenAI, Anthropic, Mistral...),
+with routing, fallbacks, keys and usage logs. cra-rag can go through it: set
+`CRA_RAG_LLM_URL`, and every command and the API talk to the proxy instead of
+Ollama (`llm.connect()` and `OpenAICompatibleLLM` in [`llm.py`](src/cra_rag/llm.py)).
+The same client reaches any OpenAI-compatible server, a vLLM one included.
+
+```powershell
+$env:LITELLM_MASTER_KEY = "sk-" + [guid]::NewGuid().ToString("N")  # the proxy requires a key
+$env:CRA_RAG_LLM_API_KEY = $env:LITELLM_MASTER_KEY
+$env:CRA_RAG_LLM_URL = "http://localhost:4000/v1"
+Start-Process uvx -ArgumentList '--from "litellm[proxy]==1.108.0" litellm --config integrations/litellm/config.yaml'
+uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
+```
+
+The model names cra-rag asks for are mapped to providers in
+[`integrations/litellm/config.yaml`](integrations/litellm/config.yaml): changing
+provider is a change of configuration, not of code. Embeddings stay on Ollama.
+
+The LiteLLM version is pinned, for the same reason as the actions: the LiteLLM
+packages published on PyPI on 24 March 2026 carried a credential stealer, and an
+unpinned install that day would have run it. A gateway holds the keys of every
+provider behind it, which makes it a target.
 
 ## Development
 

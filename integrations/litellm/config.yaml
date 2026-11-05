@@ -1,0 +1,46 @@
+# LiteLLM proxy: one OpenAI-compatible API in front of the models.
+#
+# Start it, in PowerShell (it listens on http://localhost:4000):
+#   $env:LITELLM_MASTER_KEY = "sk-" + [guid]::NewGuid().ToString("N")  # a key for this session
+#   $env:CRA_RAG_LLM_API_KEY = $env:LITELLM_MASTER_KEY                  # cra-rag sends it
+#   $env:CRA_RAG_LLM_URL = "http://localhost:4000/v1"                  # cra-rag goes through LiteLLM
+#   Start-Process uvx -ArgumentList '--from "litellm[proxy]==1.108.0" litellm --config integrations/litellm/config.yaml'
+# Then, in the same window:
+#   uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
+#
+# The model names below are the ones cra-rag asks for; LiteLLM maps each to a
+# provider. Changing provider (vLLM, a hosted API...) is a change here, not in the code.
+#
+# The context window (num_ctx) is set here: the OpenAI API has no such parameter,
+# it belongs to the server. Without it Ollama would use its own default, smaller
+# than the agent's prompts, and silently cut them. The values are the ones cra-rag
+# uses when it talks to Ollama directly.
+
+model_list:
+  - model_name: ministral-3:3b # answers
+    litellm_params:
+      model: ollama_chat/ministral-3:3b
+      api_base: http://localhost:11434
+      num_ctx: 16384 # the agent's conversations (a RAG prompt needs 8192)
+    model_info:
+      supports_function_calling: true # the agent's tools
+
+  - model_name: ministral-3:8b # the judge
+    litellm_params:
+      model: ollama_chat/ministral-3:8b
+      api_base: http://localhost:11434
+      num_ctx: 4096 # a verdict needs about 1,000 tokens
+
+  # A vLLM server (later in step 10) would be one more entry, for example:
+  # - model_name: ministral-3b-vllm
+  #   litellm_params:
+  #     model: hosted_vllm/<the model id served by vLLM>
+  #     api_base: http://<vllm host>:8000/v1
+
+litellm_settings:
+  drop_params: true # ignore a parameter a provider does not support instead of failing
+
+general_settings:
+  # LiteLLM refuses to start without a key: every request must carry it. The key is
+  # read from the environment, never written here (this file is public).
+  master_key: os.environ/LITELLM_MASTER_KEY

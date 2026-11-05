@@ -138,7 +138,7 @@ def create_app(settings: Settings | None = None, model: llm.LLM | None = None) -
         searcher = retriever.Retriever(
             settings.raw_dir, use_dense=has_index, embedder=embedder, index_dir=settings.index_dir
         )
-        chat = model or llm.OllamaLLM(settings.chat_model, settings.ollama_url)
+        chat = model or llm.connect(settings.chat_model, settings.ollama_url)
         state["app"] = State(settings, searcher, chat)
         yield
         searcher.close()
