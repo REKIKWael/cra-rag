@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/REKIKWael/cra-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/REKIKWael/cra-rag/actions/workflows/ci.yml)
 [![Evaluate](https://github.com/REKIKWael/cra-rag/actions/workflows/evaluate.yml/badge.svg)](https://github.com/REKIKWael/cra-rag/actions/workflows/evaluate.yml)
+[![Security](https://github.com/REKIKWael/cra-rag/actions/workflows/security.yml/badge.svg)](https://github.com/REKIKWael/cra-rag/actions/workflows/security.yml)
 
 A question-answering assistant for EU product cybersecurity regulation: the
 **Cyber Resilience Act** (Regulation (EU) 2024/2847) and the **RED delegated act**
@@ -309,6 +310,25 @@ The RAG pipeline therefore stays the default. Next: several runs per
 configuration, compared on their mean and spread, a scope check that refuses
 other laws, countries and standards before any answer, and a larger model for
 the agent.
+
+## Security checks in CI
+
+The [Security workflow](.github/workflows/security.yml) runs on every push to
+`main`, every pull request and every Monday, since a new vulnerability can be
+published for a dependency while the code stays the same. Each job blocks the
+pull request as soon as it finds a problem:
+
+| Check | Kind | What it looks at |
+|---|---|---|
+| [Semgrep](https://semgrep.dev/) | SAST (static analysis of the code) | The Python code, the Dockerfile and the workflows, with the open rule sets for Python, Dockerfiles, GitHub Actions and leaked secrets |
+| [pip-audit](https://pypi.org/project/pip-audit/) | SCA (the dependencies) | Every Python package version locked in `uv.lock`, checked by hash |
+| [Trivy](https://trivy.dev/) | SCA (the image) | The Docker image: system packages of the base image and Python packages, high and critical vulnerabilities that have a fix |
+
+The first Semgrep run on this code found a real issue: the downloaded texts were
+parsed with Python's standard XML parser, which a malicious file could exploit with
+entity tricks (an "XML bomb" expanding to gigabytes in memory). They are now parsed
+with [defusedxml](https://pypi.org/project/defusedxml/), and a test checks that such
+a file is refused ([`parse.py`](src/cra_rag/parse.py)).
 
 ## Development
 

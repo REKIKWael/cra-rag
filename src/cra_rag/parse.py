@@ -1,6 +1,8 @@
 """Turn the raw Official Journal HTML into sections: articles, annexes and recitals.
 
-The files are XHTML (valid XML), so the standard library parser is enough.
+The files are XHTML (valid XML). They are parsed with defusedxml, which refuses
+the entity tricks a malicious XML file could use (XML bombs, external entities):
+the texts come from the internet, so they are treated as untrusted input.
 Every section carries a stable identifier from the European Legislation
 Identifier (ELI) markup, e.g. ``art_14`` or ``anx_I``. We prefix it with the
 source, ``cra:art_14``, and the same id is used in every language.
@@ -8,11 +10,16 @@ source, ``cra:art_14``, and the same id is used in every language.
 
 import json
 import re
-import xml.etree.ElementTree as ET
+
+# Parsing goes through defusedxml, which refuses entity tricks (XML bombs, external
+# entities). The standard module is imported for the Element type only.
+import xml.etree.ElementTree as ET  # nosemgrep
 from collections import Counter
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
+import defusedxml.ElementTree as SafeET
 
 SECTION_ID = re.compile(r"^(art|anx|rct)_([0-9]+|[IVXLC]+)$")
 KINDS = {"art": "article", "anx": "annex", "rct": "recital"}
@@ -213,7 +220,7 @@ def _walk(element: ET.Element, chapter: str = "") -> Iterator[tuple[ET.Element, 
 
 
 def parse_file(path: Path, *, source: str, lang: str, url: str) -> list[Section]:
-    root = ET.parse(path).getroot()
+    root = SafeET.parse(path).getroot()
     sections = []
     for element, chapter in _walk(root):
         eli_id = element.get("id")

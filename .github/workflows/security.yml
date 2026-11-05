@@ -1,0 +1,76 @@
+name: Security
+
+# Security checks on every push to main, every pull request, and once a week: a
+# vulnerability can be published for a dependency even when the code has not changed.
+#
+# - SAST (static analysis of our own code): Semgrep, with the open rules for Python,
+#   Dockerfiles, GitHub Actions workflows and leaked secrets.
+# - SCA (analysis of the components we depend on): pip-audit on the exact versions
+#   locked in uv.lock, and Trivy on the Docker image (the system packages of the base
+#   image and the Python packages installed in it).
+#
+# Each job fails as soon as it finds a problem, which blocks the pull request.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1" # every Monday, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: Code analysis (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Semgrep
+        # --error: exit with a failure when a rule matches. The corpus (EU texts) and
+        # the evaluation results are data, not code.
+        run: >
+          uvx semgrep@1.183.0 scan
+          --config p/python --config p/dockerfile --config p/github-actions --config p/secrets
+          --error --exclude corpus --exclude eval
+
+  dependencies:
+    name: Dependencies (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Export the locked versions, with their hashes
+        run: uv export --format requirements-txt --frozen --no-emit-project > requirements-audit.txt
+
+      - name: pip-audit
+        # Checks every locked package against the Python vulnerability databases.
+        run: uvx pip-audit@2.10.1 -r requirements-audit.txt --require-hashes --disable-pip --strict
+
+  image:
+    name: Docker image (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the image
+        run: docker build --tag cra-rag:scan .
+
+      - name: Trivy
+        # High and critical vulnerabilities that already have a fix fail the job. Those
+        # with no fix released yet are skipped: nothing can be done until one exists.
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: cra-rag:scan
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
