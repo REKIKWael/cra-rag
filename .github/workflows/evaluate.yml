@@ -41,9 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: astral-sh/setup-uv@v10.3.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           enable-cache: true
 
@@ -57,13 +56,22 @@ jobs:
           df -h /
 
       - name: Install and start Ollama
+        # The release archive is downloaded, then checked against its SHA-256 before
+        # anything runs: no "curl | sh". The checksum comes from the release's
+        # sha256sum.txt; a change of version means a new checksum here.
         # Run 1 lost the runner while the judge model was working: a model running on
-        # every CPU can starve the runner's own process. So Ollama runs here with the
-        # lowest CPU priority (nice), with at most two models in memory: the embedding
-        # model, which every search needs, and one chat model.
+        # every CPU can starve the runner's own process. So Ollama runs with the lowest
+        # CPU priority (nice), with at most two models in memory: the embedding model,
+        # which every search needs, and one chat model.
+        env:
+          OLLAMA_SHA256: c9490e0f520be21271d969e6703f012268b1d39f8b70dd58854e5bfef7a75bb6
         run: |
-          curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION="$OLLAMA_VERSION" sh
-          sudo systemctl disable --now ollama 2>/dev/null || true
+          archive="$RUNNER_TEMP/ollama-linux-amd64.tar.zst"
+          curl --fail --silent --show-error --location --output "$archive" \
+            "https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
+          echo "${OLLAMA_SHA256}  ${archive}" | sha256sum --check --strict
+          sudo tar --zstd --extract --file "$archive" --directory /usr/local
+          rm "$archive"
           OLLAMA_MAX_LOADED_MODELS=2 OLLAMA_NUM_PARALLEL=1 \
             nohup nice -n 19 ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 &
           for attempt in $(seq 1 30); do
@@ -81,7 +89,7 @@ jobs:
 
       - name: Restore the embeddings of earlier runs
         id: embeddings
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: data/index/bge-m3.cache.jsonl
           key: embeddings-bge-m3-${{ hashFiles('corpus/raw/**', 'src/cra_rag/parse.py', 'src/cra_rag/chunks.py') }}
@@ -93,7 +101,7 @@ jobs:
       - name: Save the embeddings for the next runs
         # Saved now rather than at the end of the job, so a later failure keeps them.
         if: steps.embeddings.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: data/index/bge-m3.cache.jsonl
           key: ${{ steps.embeddings.outputs.cache-primary-key }}
@@ -137,7 +145,7 @@ jobs:
 
       - name: Keep the results
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: eval-results
           path: eval/results/

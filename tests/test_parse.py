@@ -8,6 +8,7 @@ Two kinds of tests:
 from pathlib import Path
 
 import pytest
+from defusedxml import EntitiesForbidden
 
 from cra_rag import parse
 
@@ -136,3 +137,16 @@ def test_known_passages_are_where_they_should_be(corpus):
     assert by_key[("cra:art_1", "fr")].label == "Article premier"
     assert by_key[("cra:anx_I", "en")].title == "Essential cybersecurity requirements"
     assert "without known exploitable vulnerabilities" in by_key[("cra:anx_I", "en")].text
+
+
+def test_an_xml_bomb_is_refused(tmp_path):
+    # "Billion laughs": nested entities that expand to gigabytes of text in memory.
+    bomb = tmp_path / "bomb.html"
+    bomb.write_text(
+        '<?xml version="1.0"?>\n<!DOCTYPE lolz [<!ENTITY lol "lol">'
+        '<!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">]>\n'
+        "<html><body><p>&lol2;</p></body></html>",
+        encoding="utf-8",
+    )
+    with pytest.raises(EntitiesForbidden):
+        parse.parse_file(bomb, source="cra", lang="en", url="")
