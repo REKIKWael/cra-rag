@@ -15,13 +15,17 @@ It is built as a small, production-style LLM system rather than a notebook:
 reproducible ingestion, measured retrieval quality, cited answers, a containerised
 API and evaluation running in CI.
 
-> **Status:** the 7 steps are done. The judge's verdicts are being confirmed by the
+> **Status:** the 8 steps are done. The judge's verdicts are being confirmed by the
 > domain expert (see [Evaluation in CI](#evaluation-in-ci)).
 > This tool helps navigate the regulatory texts. It is not legal advice.
 
 ## Design principles
 
 - **Every answer cites its sources** (article, annex). No source, no answer.
+- **Questions about the assistant itself** ("who are you?", "what can you do?") are
+  recognised before any search and get a fixed presentation (intent routing,
+  [`router.py`](src/cra_rag/router.py)). A test checks that none of the reference
+  questions is caught by mistake.
 - **Quality is measured, not assumed.** 40 reference questions in French and
   English, each with a reference answer and the sections that answer it, score the
   retrieval and the answers. See [`eval/questions.toml`](eval/questions.toml).
@@ -61,6 +65,7 @@ covers products placed on the market "before 11 December 2027" in English, but
 - [x] 5. Generation: cited answers from a local model behind a provider interface, checked on the 40 questions
 - [x] 6. FastAPI service and Docker image, built and smoke-tested in CI
 - [x] 7. End-to-end evaluation in CI, with a judge model checked against a human review
+- [x] 8. An agent that searches with tools, measured against the RAG pipeline (see [Agent mode](#agent-mode))
 
 ## Usage
 
@@ -76,8 +81,10 @@ uv run cra-rag embed-speed              # time the embedding model (needs Ollama
 uv run cra-rag index                    # build the vector index (Ollama + bge-m3, once)
 uv run cra-rag eval-search --method all # compare BM25, semantic and hybrid search
 uv run cra-rag ask "Dans quel délai signaler une faille activement exploitée ?"
+uv run cra-rag ask --mode agent "..."   # the model searches the texts itself, with tools
 uv run cra-rag eval-answers             # answer the 40 questions, check them (resumable)
 uv run cra-rag judge                    # judge the answers with ministral-3:8b (resumable)
+uv run cra-rag eval-answers --mode agent # the same for the agent (then judge --mode agent)
 uv run cra-rag agreement                # compare the judge with eval/expert_review.toml
 uv run cra-rag download                 # refresh the texts from the EU Publications Office
 ```
@@ -211,7 +218,7 @@ GitHub's free runners, with the real models, when started by hand from the
 Actions tab: it installs Ollama, builds the vector index, scores the three search
 methods (and fails below recall@10 = 0.80), recomputes the answers whose
 settings changed, judges them, and publishes the scores on the run page with the
-result files as an artifact.
+result files as an artifact. A choice of mode runs it for the RAG pipeline or the agent.
 
 ### What the judge says, and how far to trust it
 
@@ -256,6 +263,52 @@ The judge's totals are therefore an indicator, not yet a score to compare models
 with. The next lever: give the judge the passages each answer cites, so that it
 checks facts against the text rather than its memory, then measure the agreement
 again with the same command.
+
+## Agent mode
+
+`uv run cra-rag ask --mode agent "..."` lets the model lead the search
+([`agent.py`](src/cra_rag/agent.py)). Through tool calling (Ollama), it can run
+`search(query)` again with other words or `read_section(id)` to read a whole
+article, and answers when it has enough. The program runs the tools, the model
+only asks for them: a citation counts only if a tool returned that section, and
+after 5 turns the model gets no more tools and must answer. Since version 2, the
+first search uses the user's whole question, as the RAG pipeline does.
+
+Measured on the same 40 questions with the same judge (Evaluate workflow, mode
+agent; every run is kept in [`eval/results/runs/`](eval/results/runs/)):
+
+| | RAG pipeline | Agent v1, run 1 | Agent v1, run 2 | Agent v2 |
+|---|---|---|---|---|
+| Judge: correct | 17 | 8 | 14 | 12 |
+| Judge: partial | 8 | 15 | 9 | 13 |
+| Judge: incorrect | 15 | 17 | 17 | 15 |
+| Cites an expected section (36) | 29 | 27 | 26 | **30** |
+| Answers, no false refusal (36) | 34 | 36 | 36 | 36 |
+
+The RAG answers come from one run on a laptop, the agent's from GitHub runners.
+
+What this shows:
+
+- **The same code does not give the same answers twice.** Agent v1 ran twice,
+  with temperature 0 and a fixed seed: 38 of its 40 answers differed, and the
+  judge counted 8 correct answers, then 14. From one machine to another the
+  floating-point computations differ slightly, one different word changes the
+  rest of the answer. A gap of a few answers between two single runs is noise.
+- **Reading the answers of v1 showed its faults.** It searched with its own
+  shorter queries, added "CRA RED" to them, which pulled the search off target,
+  never read a whole section, and after refusing an out-of-scope question still
+  added what the CRA says. Version 2 starts from a search with the whole question
+  and states a stricter refusal rule.
+- **With a 3-billion-parameter model, the autonomy is barely used.** Agent v2
+  answered right after its first search for 39 questions out of 40, and read a
+  whole section twice. It cites an expected section most often (30 of 36), but
+  its judged results are within the noise of v1's, and it still adds content to
+  out-of-scope refusals (q038, q039, q040).
+
+The RAG pipeline therefore stays the default. Next: several runs per
+configuration, compared on their mean and spread, a scope check that refuses
+other laws, countries and standards before any answer, and a larger model for
+the agent.
 
 ## Development
 

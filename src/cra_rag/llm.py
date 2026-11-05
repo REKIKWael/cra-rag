@@ -3,6 +3,10 @@
 Anything with a `model` name and a `chat(system, user, on_token)` method can be
 plugged in: today Ollama running locally, tomorrow a hosted API, without
 touching the rest of the code.
+
+An agent needs one more thing: a conversation in which the model may ask to run
+tools (`ToolLLM.converse`). The model only names the tool and its arguments; the
+program runs it and sends the result back in the next message.
 """
 
 import json
@@ -18,12 +22,21 @@ CHAT_MODEL = "ministral-3:3b"  # Mistral AI, Apache 2.0, 3 GB: runs on a laptop 
 
 
 @dataclass(frozen=True)
+class ToolCall:
+    """The model asks the program to run a tool: its name and its arguments."""
+
+    name: str
+    arguments: dict
+
+
+@dataclass(frozen=True)
 class Completion:
     text: str
     prompt_tokens: int = 0
     prompt_seconds: float = 0.0  # time spent reading the prompt
     output_tokens: int = 0
     output_seconds: float = 0.0  # time spent writing the answer
+    tool_calls: tuple[ToolCall, ...] = ()  # empty unless tools were offered
 
 
 class LLMError(RuntimeError):
@@ -35,6 +48,17 @@ class LLM(Protocol):
 
     def chat(
         self, system: str, user: str, on_token: Callable[[str], None] | None = None
+    ) -> Completion: ...
+
+
+class ToolLLM(LLM, Protocol):
+    """A model that can also hold a conversation and call tools (for the agent)."""
+
+    def converse(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None = None,
+        on_token: Callable[[str], None] | None = None,
     ) -> Completion: ...
 
 
@@ -54,7 +78,9 @@ class OllamaLLM:
         self.url = url.rstrip("/")
         self.client = client or httpx.Client(timeout=900.0, trust_env=False)
         self.options = {
-            "temperature": 0,  # same question, same answer: needed to evaluate
+            # As repeatable as possible, which evaluation needs. Not fully: from one
+            # machine to another, answers can still differ (see "Agent mode" in the README).
+            "temperature": 0,
             "seed": 0,
             "num_predict": max_output_tokens,
             "num_ctx": context_tokens,
@@ -68,15 +94,39 @@ class OllamaLLM:
         schema: dict | None = None,
     ) -> Completion:
         """`schema`: a JSON schema the reply must follow (Ollama structured outputs)."""
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        return self._post(messages, on_token, schema=schema)
+
+    def converse(
+        self,
+        messages: list[dict],
+        tools: list[dict] | None = None,
+        on_token: Callable[[str], None] | None = None,
+    ) -> Completion:
+        """One reply in a conversation. `messages` follow Ollama's format (system,
+        user, assistant and tool roles); `tools` describe the functions the model
+        may ask for, and its requests come back in `Completion.tool_calls`."""
+        return self._post(messages, on_token, tools=tools)
+
+    def _post(
+        self,
+        messages: list[dict],
+        on_token: Callable[[str], None] | None,
+        schema: dict | None = None,
+        tools: list[dict] | None = None,
+    ) -> Completion:
         request = {
             "model": self.model,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "messages": messages,
             "stream": True,
             "options": self.options,
         }
         if schema:
             request["format"] = schema
+        if tools:
+            request["tools"] = tools
         pieces: list[str] = []
+        calls: list[ToolCall] = []
         final: dict = {}
         try:
             with self.client.stream("POST", f"{self.url}/api/chat", json=request) as response:
@@ -98,6 +148,15 @@ class OllamaLLM:
                         pieces.append(piece)
                         if on_token:
                             on_token(piece)
+                    for call in message.get("message", {}).get("tool_calls", []):
+                        function = call.get("function", {})
+                        arguments = function.get("arguments") or {}
+                        if isinstance(arguments, str):  # some models send JSON text
+                            try:
+                                arguments = json.loads(arguments)
+                            except json.JSONDecodeError:
+                                arguments = {}
+                        calls.append(ToolCall(function.get("name", ""), arguments))
                     if message.get("done"):
                         final = message
         except httpx.ConnectError as exc:
@@ -113,4 +172,5 @@ class OllamaLLM:
             prompt_seconds=final.get("prompt_eval_duration", 0) / 1e9,
             output_tokens=final.get("eval_count", 0),
             output_seconds=final.get("eval_duration", 0) / 1e9,
+            tool_calls=tuple(calls),
         )

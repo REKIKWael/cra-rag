@@ -8,6 +8,7 @@ from collections import Counter
 from pathlib import Path
 
 from cra_rag import (
+    agent,
     answer,
     answer_eval,
     chunks,
@@ -21,6 +22,7 @@ from cra_rag import (
     questions,
     retriever,
     review,
+    router,
     search,
 )
 
@@ -149,25 +151,31 @@ def _search(args: argparse.Namespace) -> int:
 
 
 def _ask(args: argparse.Namespace) -> int:
+    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
+    if router.is_about_assistant(args.question):
+        print(router.ABOUT[lang])
+        print("\n(A question about the assistant: fixed presentation, no search, no model.)")
+        return 0
     method = args.method
     if method == "auto":
         method = "hybrid" if (dense.INDEX_DIR / "qdrant").exists() else "bm25"
     searcher = _open_retriever(args.raw, [method])
     if searcher is None:
         return 1
-    lang = args.lang if args.lang != "auto" else search.guess_lang(args.question)
-    model = llm.OllamaLLM(model=args.model)
-    print(f"Searching with {method}, then writing the answer with {args.model}...\n")
+    show = lambda piece: print(piece, end="", flush=True)  # noqa: E731
     try:
-        result = answer.answer(
-            args.question,
-            lang,
-            searcher,
-            model,
-            method=method,
-            passages=args.passages,
-            on_token=lambda piece: print(piece, end="", flush=True),
-        )
+        if args.mode == "agent":
+            model = llm.OllamaLLM(model=args.model, context_tokens=agent.CONTEXT_TOKENS)
+            print(f"Agent {args.model}: it searches the texts itself ({method} search)...\n")
+            result = agent.run(
+                args.question, lang, searcher, model, method, on_token=show, on_step=_show_step
+            )
+        else:
+            model = llm.OllamaLLM(model=args.model)
+            print(f"Searching with {method}, then writing the answer with {args.model}...\n")
+            result = answer.answer(
+                args.question, lang, searcher, model, method, args.passages, on_token=show
+            )
     except (embed.EmbeddingError, llm.LLMError) as exc:
         print(f"\nError: {exc}", file=sys.stderr)
         return 1
@@ -189,6 +197,13 @@ def _ask(args: argparse.Namespace) -> int:
     return 0
 
 
+def _show_step(step: agent.Step) -> None:
+    """Print a tool the agent ran, as it runs it."""
+    arguments = ", ".join(f"{name}={value!r}" for name, value in step.arguments.items())
+    found = ", ".join(step.found) or "nothing"
+    print(f"  -> {step.tool}({arguments}): {found}", flush=True)
+
+
 def _eval_answers(args: argparse.Namespace) -> int:
     method = args.method
     if method == "auto":
@@ -200,13 +215,14 @@ def _eval_answers(args: argparse.Namespace) -> int:
     searcher = _open_retriever(args.raw, [method])
     if searcher is None:
         return 1
-    model = llm.OllamaLLM(model=args.model)
-    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model)
-    print(f"{len(question_set)} questions, {method} search, {args.model}.")
+    context = agent.CONTEXT_TOKENS if args.mode == "agent" else 8192
+    model = llm.OllamaLLM(model=args.model, context_tokens=context)
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, args.model, args.mode)
+    print(f"{len(question_set)} questions, {args.mode} mode, {method} search, {args.model}.")
     print("Answers already saved with the same settings are reused: interrupt any time.")
     try:
         records = answer_eval.run(
-            question_set, searcher, model, method, args.passages, path, log=print
+            question_set, searcher, model, method, args.passages, path, log=print, mode=args.mode
         )
     except (embed.EmbeddingError, llm.LLMError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
@@ -235,11 +251,14 @@ def _eval_answers(args: argparse.Namespace) -> int:
     return 0
 
 
-def _saved_answers(question_set: list[questions.Question], model: str) -> tuple[Path, list[dict]]:
-    """The answers saved by eval-answers for this model (an empty list if there are none)."""
-    path = answer_eval.results_path(answer_eval.RESULTS_DIR, model)
+def _saved_answers(
+    question_set: list[questions.Question], model: str, mode: str = "rag"
+) -> tuple[Path, list[dict]]:
+    """The answers saved by eval-answers for this model and mode (empty if there are none)."""
+    path = answer_eval.results_path(answer_eval.RESULTS_DIR, model, mode)
     if not path.exists():
-        print(f"Error: no answers in {path}. Run: uv run cra-rag eval-answers", file=sys.stderr)
+        run = "uv run cra-rag eval-answers" + ("" if mode == "rag" else f" --mode {mode}")
+        print(f"Error: no answers in {path}. Run: {run}", file=sys.stderr)
         return path, []
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
     in_set = {q.id for q in question_set}
@@ -248,7 +267,7 @@ def _saved_answers(question_set: list[questions.Question], model: str) -> tuple[
 
 def _judge(args: argparse.Namespace) -> int:
     question_set = questions.load(args.file)
-    path, records = _saved_answers(question_set, args.answers_model)
+    path, records = _saved_answers(question_set, args.answers_model, args.mode)
     if not records:
         return 1
     # A verdict needs about 1,000 tokens of context: a smaller window saves memory.
@@ -471,6 +490,12 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd = commands.add_parser("ask", help='answer a question with citations: ask "..."')
     cmd.add_argument("question")
+    cmd.add_argument(
+        "--mode",
+        choices=answer_eval.MODES,
+        default="rag",
+        help="rag: one search, then the answer; agent: the model searches by itself",
+    )
     cmd.add_argument("--lang", choices=["auto", *questions.LANGS], default="auto")
     cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
     cmd.add_argument("--passages", type=int, default=8, help="passages given to the model")
@@ -482,6 +507,7 @@ def main(argv: list[str] | None = None) -> int:
         "eval-answers", help="answer the reference questions and check the answers"
     )
     cmd.add_argument("--only", help="comma-separated question ids, e.g. q001,q008")
+    cmd.add_argument("--mode", choices=answer_eval.MODES, default="rag")
     cmd.add_argument("--method", choices=["auto", *retriever.METHODS], default="auto")
     cmd.add_argument("--passages", type=int, default=8)
     cmd.add_argument("--model", default=llm.CHAT_MODEL)
@@ -492,6 +518,7 @@ def main(argv: list[str] | None = None) -> int:
     cmd = commands.add_parser("judge", help="judge the saved answers with a larger model")
     cmd.add_argument("--judge-model", default=judge.JUDGE_MODEL)
     cmd.add_argument("--answers-model", default=llm.CHAT_MODEL)
+    cmd.add_argument("--mode", choices=answer_eval.MODES, default="rag", help="whose answers")
     cmd.add_argument("--file", type=Path, default=questions.QUESTIONS_FILE)
     cmd.set_defaults(handler=_judge)
 

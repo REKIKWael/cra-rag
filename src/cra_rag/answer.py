@@ -13,6 +13,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from cra_rag import router
 from cra_rag.llm import LLM, Completion
 from cra_rag.retriever import Retriever
 
@@ -75,6 +76,7 @@ class Answer:
     text: str
     sources: tuple[Source, ...]
     completion: Completion
+    route: str = "regulation"  # "about": a question about the assistant (router.py)
 
     @property
     def citations(self) -> tuple[str, ...]:
@@ -164,6 +166,12 @@ def build_prompt(question: str, sources: tuple[Source, ...], lang: str = "en") -
     return f"Sources:\n\n{sources_text}\n\nQuestion: {question}\n\n{REMINDERS[lang]}"
 
 
+def presentation(question: str, lang: str) -> Answer:
+    """The fixed answer to a question about the assistant itself: no search, no model."""
+    text = router.ABOUT[lang]
+    return Answer(question, lang, text, (), Completion(text=text), route="about")
+
+
 def answer(
     question: str,
     lang: str,
@@ -173,6 +181,11 @@ def answer(
     passages: int = 8,
     on_token: Callable[[str], None] | None = None,
 ) -> Answer:
+    if router.is_about_assistant(question):
+        result = presentation(question, lang)
+        if on_token:
+            on_token(result.text)
+        return result
     sources = find_sources(retriever, question, lang, method, passages)
     completion = llm.chat(SYSTEM_PROMPT, build_prompt(question, sources, lang), on_token)
     return Answer(question, lang, clean(completion.text), sources, completion)
