@@ -12,7 +12,7 @@
 #
 # Leave verdict empty for an answer not reviewed yet. Then: uv run cra-rag agreement
 
-reviewer = "Claude (AI assistant), each answer checked against the corpus; not yet confirmed by the domain expert"  # who gave these verdicts
+reviewer = "First review of the 40 answers by Claude (AI assistant), checked against the corpus; the 12 answers where it disagreed with the judge were then decided by the domain expert (by = \"expert\")"  # who gave these verdicts
 
 [[review]]
 id = "q001"  # lookup, fr: On vient de découvrir qu'une faille de notre produit est exploitée par des atta…
@@ -24,7 +24,9 @@ note = "Gives the 24-hour early warning, but not the 72-hour notification nor th
 id = "q002"  # trap, fr: Le CRA ne s'applique qu'en décembre 2027 : est-ce qu'on a vraiment besoin d'org…
 verdict = "partial"
 reference_ok = true
-note = "Right conclusion (Article 14 from 11 September 2026), but opens by saying the texts do not answer and wrongly limits reporting to products placed on the market from that date (French wording of Article 69(3))."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "The texts do answer the question: opening with 'the texts do not allow a full answer' is wrong and adds nothing."
 
 [[review]]
 id = "q003"  # multi, fr: Nous éditons un gestionnaire de mots de passe. Peut-on se contenter d'une auto-…
@@ -96,13 +98,17 @@ note = "Yes is right, but 11 December 2025 is the deadline of an implementing ac
 id = "q014"  # multi, fr: Nous fabriquons des cartes à puce sécurisées. Sont-elles des produits critiques…
 verdict = "incorrect"
 reference_ok = true
-note = "Annex IV right, but ends with 'otherwise an internal assessment', while module A is not possible for critical products."
+by = "expert"
+first_review = "incorrect"  # the verdict of the first review
+note = "Annex IV and Article 32(3) are right, but the last sentence ('otherwise an internal assessment or an audit') misleads: module A is excluded for critical products."
 
 [[review]]
 id = "q015"  # lookup, fr: On doit rédiger notre déclaration UE de conformité. Quelles informations doit-e…
-verdict = "partial"
+verdict = "correct"
 reference_ok = true
-note = "Items 1 to 7 right; the date, place, name, function and signature of the signatory are missing (answer cut at the token limit)."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "Items 1 to 7 of Annex V right; the missing signature block (item 8) is not a key fact. 'Manufacturer' and 'provider' are equivalent here."
 
 [[review]]
 id = "q016"  # multi, fr: Peut-on mettre une version courte de la déclaration de conformité dans le carto…
@@ -114,13 +120,17 @@ note = ""
 id = "q017"  # lookup, en: What do we need to put in our technical documentation file?
 verdict = "partial"
 reference_ok = true
-note = "Design, vulnerability handling, risk assessment and support period right; general description, standards applied, test reports and the EU declaration missing."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "Items 2, 3 and 4 of Annex VII right (some repeated); items 1, 5, 6, 7 and 8 missing. Nothing wrong."
 
 [[review]]
 id = "q018"  # lookup, fr: Quelle est la différence entre le module A et le module H pour évaluer la confo…
 verdict = "partial"
 reference_ok = true
-note = "Core difference right (A without notified body, H with one); wrong caveat on delegating module A; the quality system approval and surveillance are not stated."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "Core difference right (A without notified body, H with one). Wrong caveat on module A (the authorised representative, not a notified body); the approved and monitored quality system of module H is missing."
 
 [[review]]
 id = "q019"  # lookup, fr: Nous fabriquons un dispositif médical connecté. Est-ce qu'il est concerné par l…
@@ -132,7 +142,9 @@ note = "Refuses; Article 2(2) excludes medical devices (Regulation 2017/745)."
 id = "q020"  # lookup, en: We import connected cameras made outside the EU. What do we have to check befor…
 verdict = "partial"
 reference_ok = true
-note = "Annex I compliance, CE marking, declaration, technical documentation and conformity assessment right (security cameras are indeed Annex III class I, point 17); Article 13(15), (16) and (19) checks missing."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "Annex I compliance, conformity assessment, technical documentation, CE marking and declaration (Article 13(20)) right, and security cameras are Annex III class I (point 17); the Article 13(15), (16) and (19) checks are missing."
 
 [[review]]
 id = "q021"  # lookup, fr: On achète des routeurs à un fabricant asiatique et on les vend sous notre propr…
@@ -162,13 +174,17 @@ note = "Without delay and separate updates where feasible are right, but opens w
 id = "q025"  # lookup, fr: On a trouvé une faille dans une bibliothèque open source que notre produit intè…
 verdict = "correct"
 reference_ok = true
-note = "All three obligations of Article 13(6) right; the extra points (coordinated disclosure policy, 10-year availability) are true."
+by = "expert"
+first_review = "correct"  # the verdict of the first review
+note = "The three obligations of Article 13(6) right; the additions (coordinated disclosure policy, updates available for at least 10 years) are true, the last one awkwardly worded."
 
 [[review]]
 id = "q026"  # lookup, fr: Est-ce qu'on doit dire à l'acheteur jusqu'à quand le produit recevra des mises …
-verdict = "partial"
+verdict = "incorrect"
 reference_ok = true
-note = "Yes is right, but the end date (month and year) at the time of purchase is missing; the 10-year figure is about update availability."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "'Yes' is right, but the answer to 'until when' is the 10 years of Article 13(9), which misleads: that is how long published updates stay available, not the support period. The end date (month and year) at purchase, Article 13(19), is missing."
 
 [[review]]
 id = "q027"  # lookup, en: What fine do we risk if we give incomplete or misleading information to a marke…
@@ -186,7 +202,9 @@ note = ""
 id = "q029"  # lookup, fr: Nos équipements sont développés uniquement pour les forces armées. Le CRA s'app…
 verdict = "partial"
 reference_ok = true
-note = "Right conclusion and citation tag, but the text names Article 8 instead of Article 2(7)."
+by = "expert"
+first_review = "partial"  # the verdict of the first review
+note = "Right conclusion and citation tag (Article 2), but the text names Article 8 instead of Article 2(7)."
 
 [[review]]
 id = "q030"  # lookup, en: Our product is pure software, there is nothing physical to stick a label on. Wh…
@@ -228,13 +246,17 @@ note = "Class II right, but says module A is allowed; class II excludes internal
 id = "q036"  # trap, fr: Les produits qu'on a vendus avant décembre 2027 échappent complètement au CRA, …
 verdict = "incorrect"
 reference_ok = true
-note = "Concludes that unmodified products stay out of the CRA; Article 14 reporting applies to them from 11 September 2026 (follows the French wording of Article 69(3)). REFERENCE: Reference follows the English Article 69(3); the published French text says 'le 11 décembre 2027'."
+by = "expert"
+first_review = "incorrect"  # the verdict of the first review
+note = "Concludes that unmodified products stay out of the CRA, while Article 14 reporting applies to them from 11 September 2026 (the answer follows the French wording of Article 69(3), 'le 11 décembre 2027'; the English says 'before')."
 
 [[review]]
 id = "q037"  # trap, fr: Le CRA nous oblige-t-il à publier la SBOM de nos produits ?
 verdict = "incorrect"
 reference_ok = true
-note = "Refuses although Annexes I, II and VII answer (retrieval missed them)."
+by = "expert"
+first_review = "incorrect"  # the verdict of the first review
+note = "Refuses although Annexes I, II and VII answer: the search missed them, so the refusal is honest, but the user gets no answer."
 
 [[review]]
 id = "q038"  # out_of_scope, en: Under NIS2, how quickly must an essential entity notify a significant incident …
@@ -252,4 +274,6 @@ note = ""
 id = "q040"  # out_of_scope, fr: Concrètement, à quel organisme français doit-on envoyer nos notifications de vu…
 verdict = "correct"
 reference_ok = true
-note = "Says the texts do not name the French body; CSIRT and ENISA via the single reporting platform is right (Article 14(1))."
+by = "expert"
+first_review = "correct"  # the verdict of the first review
+note = "Says the texts do not name the French body and invents none; CSIRT and ENISA via the single reporting platform, 24-hour early warning, are right (Article 14(1) and (2))."
